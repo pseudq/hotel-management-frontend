@@ -15,6 +15,7 @@ import ServiceManagement from "./components/ServiceManagement";
 import InvoiceManagement from "./components/InvoiceManagement";
 import Login from "./components/Login";
 import PrivateRoute from "./components/PrivateRoute";
+import RoleBasedRoute from "./components/RoleBasedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 
 // Tạo theme hiện đại hơn
@@ -116,6 +117,26 @@ const theme = createTheme({
   },
 });
 
+// Layout component để tái sử dụng
+const DashboardLayout = ({ children }) => (
+  <Box
+    sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}
+  >
+    <Sidebar />
+    <Box
+      component="main"
+      sx={{
+        flexGrow: 1,
+        p: 3,
+        pt: { xs: 8, sm: 9 },
+        overflow: "auto",
+      }}
+    >
+      {children}
+    </Box>
+  </Box>
+);
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -125,186 +146,71 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
 
+            {/* Route cho cả quản lý và nhân viên */}
             <Route element={<PrivateRoute />}>
               <Route
                 path="/"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <Dashboard />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <Dashboard />
+                  </DashboardLayout>
                 }
               />
+            </Route>
 
+            {/* Route chỉ cho quản lý */}
+            <Route element={<RoleBasedRoute allowedRoles={["quản lý"]} />}>
               <Route
                 path="/rooms"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <RoomManagement />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <RoomManagement />
+                  </DashboardLayout>
                 }
               />
 
               <Route
                 path="/room-types"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <RoomTypeManagement />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <RoomTypeManagement />
+                  </DashboardLayout>
                 }
               />
 
               <Route
                 path="/customers"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <CustomerManagement />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <CustomerManagement />
+                  </DashboardLayout>
                 }
               />
 
               <Route
                 path="/bookings"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <BookingManagement />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <BookingManagement />
+                  </DashboardLayout>
                 }
               />
 
               <Route
                 path="/services"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <ServiceManagement />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <ServiceManagement />
+                  </DashboardLayout>
                 }
               />
 
               <Route
                 path="/invoices"
                 element={
-                  <Box
-                    sx={{
-                      display: "flex",
-                      minHeight: "100vh",
-                      bgcolor: "background.default",
-                    }}
-                  >
-                    <Sidebar />
-                    <Box
-                      component="main"
-                      sx={{
-                        flexGrow: 1,
-                        p: 3,
-                        pt: { xs: 8, sm: 9 },
-                        overflow: "auto",
-                      }}
-                    >
-                      <InvoiceManagement />
-                    </Box>
-                  </Box>
+                  <DashboardLayout>
+                    <InvoiceManagement />
+                  </DashboardLayout>
                 }
               />
             </Route>

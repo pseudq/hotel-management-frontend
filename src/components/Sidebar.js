@@ -47,7 +47,7 @@ const Sidebar = () => {
   const [open, setOpen] = useState(!isMobile);
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout } = useAuth(); // eslint-disable-next-line
+  const { user, logout, hasRole } = useAuth(); //eslint-disable-next-line
   const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
@@ -67,15 +67,46 @@ const Sidebar = () => {
     logout();
   };
 
+  // Định nghĩa các menu item với thông tin về quyền truy cập
   const menuItems = [
-    { text: "Dashboard", icon: <Home />, path: "/" },
-    { text: "Rooms", icon: <KingBed />, path: "/rooms" },
-    { text: "Room Types", icon: <Category />, path: "/room-types" },
-    { text: "Customers", icon: <People />, path: "/customers" },
-    { text: "Bookings", icon: <Book />, path: "/bookings" },
-    { text: "Services", icon: <RoomService />, path: "/services" },
-    { text: "Invoices", icon: <Receipt />, path: "/invoices" },
+    {
+      text: "Dashboard",
+      icon: <Home />,
+      path: "/",
+      roles: ["quản lý", "nhân viên"],
+    },
+    { text: "Rooms", icon: <KingBed />, path: "/rooms", roles: ["quản lý"] },
+    {
+      text: "Room Types",
+      icon: <Category />,
+      path: "/room-types",
+      roles: ["quản lý"],
+    },
+    {
+      text: "Customers",
+      icon: <People />,
+      path: "/customers",
+      roles: ["quản lý"],
+    },
+    { text: "Bookings", icon: <Book />, path: "/bookings", roles: ["quản lý"] },
+    {
+      text: "Services",
+      icon: <RoomService />,
+      path: "/services",
+      roles: ["quản lý"],
+    },
+    {
+      text: "Invoices",
+      icon: <Receipt />,
+      path: "/invoices",
+      roles: ["quản lý"],
+    },
   ];
+
+  // Lọc menu items dựa trên vai trò của người dùng
+  const filteredMenuItems = menuItems.filter((item) => {
+    return hasRole(item.roles);
+  });
 
   // Lấy chữ cái đầu tiên của tên người dùng cho Avatar
   const getInitials = () => {
@@ -116,7 +147,7 @@ const Sidebar = () => {
       <Divider />
       <Box sx={{ overflow: "auto", height: "100%" }}>
         <List component="nav" sx={{ px: 2 }}>
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             <ListItem
               button
               component={Link}

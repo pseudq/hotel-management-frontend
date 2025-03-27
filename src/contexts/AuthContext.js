@@ -74,6 +74,22 @@ export const AuthProvider = ({ children }) => {
     navigate("/login");
   };
 
+  // Hàm kiểm tra vai trò
+  const hasRole = (roles) => {
+    if (!user) return false;
+
+    const userRole = user.vai_tro?.toLowerCase();
+    if (!userRole) return false;
+
+    // Nếu roles là một mảng, kiểm tra xem người dùng có vai trò nào trong mảng không
+    if (Array.isArray(roles)) {
+      return roles.some((role) => role.toLowerCase() === userRole);
+    }
+
+    // Nếu roles là một chuỗi, kiểm tra xem người dùng có vai trò đó không
+    return roles.toLowerCase() === userRole;
+  };
+
   const value = {
     user,
     loading,
@@ -81,6 +97,7 @@ export const AuthProvider = ({ children }) => {
     login: loginUser,
     logout: logoutUser,
     isAuthenticated: !!user,
+    hasRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
