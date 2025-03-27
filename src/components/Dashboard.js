@@ -29,6 +29,13 @@ import {
   InputLabel,
   Select,
   CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
 } from "@mui/material";
 import {
   getRooms,
@@ -39,6 +46,10 @@ import {
   getBookings,
   getBookingById,
   updateRoom,
+  getServices,
+  getBookingServices,
+  addBookingService,
+  deleteBookingService,
 } from "../apiService";
 import {
   KingBed,
@@ -52,6 +63,9 @@ import {
   AttachMoney,
   People,
   CalendarToday,
+  RoomService,
+  Delete,
+  Add,
 } from "@mui/icons-material";
 
 const Dashboard = () => {
@@ -59,10 +73,13 @@ const Dashboard = () => {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [services, setServices] = useState([]);
+  const [bookingServices, setBookingServices] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [checkOutDialogOpen, setCheckOutDialogOpen] = useState(false);
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkInData, setCheckInData] = useState({
     khach_hang_id: "",
@@ -72,6 +89,11 @@ const Dashboard = () => {
     trang_thai: "đã nhận",
   });
   const [checkOutData, setCheckOutData] = useState(null);
+  const [newServiceData, setNewServiceData] = useState({
+    dich_vu_id: "",
+    so_luong: 1,
+    ghi_chu: "",
+  });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -90,6 +112,7 @@ const Dashboard = () => {
     fetchRooms();
     fetchCustomers();
     fetchBookings();
+    fetchServices();
   }, []);
 
   const fetchRooms = async () => {
@@ -126,6 +149,27 @@ const Dashboard = () => {
       setBookings(response.data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
+    }
+  };
+
+  const fetchServices = async () => {
+    try {
+      const response = await getServices();
+      console.log("Services fetched:", response.data);
+      setServices(response.data);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
+
+  const fetchBookingServices = async (bookingId) => {
+    try {
+      const response = await getBookingServices(bookingId);
+      console.log("Booking services fetched:", response.data);
+      setBookingServices(response.data);
+    } catch (error) {
+      console.error("Error fetching booking services:", error);
+      setBookingServices([]);
     }
   };
 
@@ -432,6 +476,177 @@ const Dashboard = () => {
     }
   };
 
+  const handleServiceDialogOpen = async () => {
+    if (!selectedRoom) {
+      console.error("No room selected for adding services");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Tìm booking ID cho phòng đang được sử dụng
+      const bookingId = findActiveBookingId(selectedRoom.id);
+
+      if (!bookingId) {
+        setSnackbar({
+          open: true,
+          message: "Không tìm thấy thông tin đặt phòng cho phòng này",
+          severity: "error",
+        });
+        handleMenuClose();
+        setLoading(false);
+        return;
+      }
+
+      // Reset form data
+      setNewServiceData({
+        dich_vu_id: "",
+        so_luong: 1,
+        ghi_chu: "",
+      });
+
+      // Lấy danh sách dịch vụ đã sử dụng của booking
+      await fetchBookingServices(bookingId);
+
+      setServiceDialogOpen(true);
+    } catch (error) {
+      console.error("Error preparing service dialog:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi chuẩn bị thêm dịch vụ: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      handleMenuClose();
+      setLoading(false);
+    }
+  };
+
+  const handleServiceDialogClose = () => {
+    setServiceDialogOpen(false);
+  };
+
+  const handleAddService = async () => {
+    if (!selectedRoom) {
+      console.error("No room selected for adding services");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Kiểm tra dữ liệu trước khi gửi
+      if (!newServiceData.dich_vu_id) {
+        setSnackbar({
+          open: true,
+          message: "Vui lòng chọn dịch vụ",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!newServiceData.so_luong || newServiceData.so_luong < 1) {
+        setSnackbar({
+          open: true,
+          message: "Số lượng phải lớn hơn 0",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Tìm booking ID cho phòng đang được sử dụng
+      const bookingId = findActiveBookingId(selectedRoom.id);
+
+      if (!bookingId) {
+        setSnackbar({
+          open: true,
+          message: "Không tìm thấy thông tin đặt phòng cho phòng này",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log(
+        "Adding service to booking ID:",
+        bookingId,
+        "with data:",
+        newServiceData
+      );
+
+      // Thêm dịch vụ cho booking
+      await addBookingService(bookingId, newServiceData);
+
+      // Làm mới danh sách dịch vụ đã sử dụng
+      await fetchBookingServices(bookingId);
+
+      // Reset form
+      setNewServiceData({
+        dich_vu_id: "",
+        so_luong: 1,
+        ghi_chu: "",
+      });
+
+      setSnackbar({
+        open: true,
+        message: "Thêm dịch vụ thành công",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error adding service:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi thêm dịch vụ: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteService = async (serviceUsageId) => {
+    setLoading(true);
+
+    try {
+      console.log("Deleting service usage:", serviceUsageId);
+
+      // Xóa dịch vụ đã sử dụng
+      await deleteBookingService(serviceUsageId);
+
+      // Tìm booking ID cho phòng đang được sử dụng
+      const bookingId = findActiveBookingId(selectedRoom.id);
+
+      // Làm mới danh sách dịch vụ đã sử dụng
+      if (bookingId) {
+        await fetchBookingServices(bookingId);
+      }
+
+      setSnackbar({
+        open: true,
+        message: "Xóa dịch vụ thành công",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting service:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi xóa dịch vụ: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getRoomStatusIcon = (status) => {
     switch (status) {
       case "trống":
@@ -480,6 +695,13 @@ const Dashboard = () => {
     available: rooms.filter((room) => room.trang_thai === "trống").length,
     occupied: rooms.filter((room) => room.trang_thai === "đang sử dụng").length,
     cleaning: rooms.filter((room) => room.trang_thai === "đang dọn").length,
+  };
+
+  // Tìm tên dịch vụ từ ID
+  // eslint-disable-next-line
+  const getServiceNameById = (id) => {
+    const service = services.find((service) => service.id === id);
+    return service ? service.ten_dich_vu : "Unknown Service";
   };
 
   return (
@@ -788,9 +1010,14 @@ const Dashboard = () => {
           </MenuItem>
         )}
         {selectedRoom?.trang_thai === "đang sử dụng" && (
-          <MenuItem onClick={handleCheckOutOpen} sx={{ py: 1.5 }}>
-            <CheckCircle sx={{ mr: 2, fontSize: 20 }} /> Check Out
-          </MenuItem>
+          <>
+            <MenuItem onClick={handleCheckOutOpen} sx={{ py: 1.5 }}>
+              <CheckCircle sx={{ mr: 2, fontSize: 20 }} /> Check Out
+            </MenuItem>
+            <MenuItem onClick={handleServiceDialogOpen} sx={{ py: 1.5 }}>
+              <RoomService sx={{ mr: 2, fontSize: 20 }} /> Add Services
+            </MenuItem>
+          </>
         )}
         {selectedRoom?.trang_thai === "đang dọn" && (
           <MenuItem onClick={handleMarkAsCleaned} sx={{ py: 1.5 }}>
@@ -981,6 +1208,173 @@ const Dashboard = () => {
             disabled={!checkOutData}
           >
             Confirm Check Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Service Dialog */}
+      <Dialog
+        open={serviceDialogOpen}
+        onClose={handleServiceDialogClose}
+        PaperProps={{
+          sx: { borderRadius: 3 },
+        }}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h5" component="div" fontWeight="bold">
+            Room Services
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Room {selectedRoom?.so_phong}
+          </Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Add New Service
+            </Typography>
+            <Grid container spacing={2} alignItems="flex-end">
+              <Grid item xs={12} sm={5}>
+                <FormControl fullWidth>
+                  <InputLabel id="service-select-label">Service</InputLabel>
+                  <Select
+                    labelId="service-select-label"
+                    value={newServiceData.dich_vu_id}
+                    label="Service"
+                    onChange={(e) =>
+                      setNewServiceData({
+                        ...newServiceData,
+                        dich_vu_id: e.target.value,
+                      })
+                    }
+                  >
+                    {services.map((service) => (
+                      <MenuItem key={service.id} value={service.id}>
+                        {service.ten_dich_vu} -{" "}
+                        {new Intl.NumberFormat("vi-VN").format(service.gia)} VND
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <TextField
+                  fullWidth
+                  label="Quantity"
+                  type="number"
+                  InputProps={{ inputProps: { min: 1 } }}
+                  value={newServiceData.so_luong}
+                  onChange={(e) =>
+                    setNewServiceData({
+                      ...newServiceData,
+                      so_luong: Number.parseInt(e.target.value) || 1,
+                    })
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  fullWidth
+                  label="Notes"
+                  value={newServiceData.ghi_chu}
+                  onChange={(e) =>
+                    setNewServiceData({
+                      ...newServiceData,
+                      ghi_chu: e.target.value,
+                    })
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} sm={2}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<Add />}
+                  onClick={handleAddService}
+                  fullWidth
+                >
+                  Add
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" gutterBottom>
+            Service History
+          </Typography>
+          {bookingServices.length > 0 ? (
+            <TableContainer component={Paper} variant="outlined">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Service</TableCell>
+                    <TableCell align="right">Price</TableCell>
+                    <TableCell align="right">Quantity</TableCell>
+                    <TableCell align="right">Total</TableCell>
+                    <TableCell>Notes</TableCell>
+                    <TableCell align="right">Time</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {bookingServices.map((service) => (
+                    <TableRow key={service.id}>
+                      <TableCell>{service.ten_dich_vu}</TableCell>
+                      <TableCell align="right">
+                        {new Intl.NumberFormat("vi-VN").format(
+                          service.gia_tien
+                        )}{" "}
+                        VND
+                      </TableCell>
+                      <TableCell align="right">{service.so_luong}</TableCell>
+                      <TableCell align="right">
+                        {new Intl.NumberFormat("vi-VN").format(
+                          service.gia_tien * service.so_luong
+                        )}{" "}
+                        VND
+                      </TableCell>
+                      <TableCell>{service.ghi_chu}</TableCell>
+                      <TableCell align="right">
+                        {new Date(service.thoi_gian_su_dung).toLocaleString()}
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Delete Service">
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleDeleteService(service.id)}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Box
+              sx={{
+                p: 3,
+                textAlign: "center",
+                bgcolor: "background.default",
+                borderRadius: 2,
+              }}
+            >
+              <Typography color="text.secondary">
+                No services have been added yet
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={handleServiceDialogClose} variant="outlined">
+            Close
           </Button>
         </DialogActions>
       </Dialog>

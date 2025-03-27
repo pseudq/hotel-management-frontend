@@ -101,10 +101,23 @@ export const checkoutBooking = (id) => {
 
 // Service APIs
 export const getServices = () => api.get("/dich-vu");
+export const getServiceById = (id) => api.get(`/dich-vu/${id}`);
 export const createService = (serviceData) => api.post("/dich-vu", serviceData);
 export const updateService = (id, serviceData) =>
   api.put(`/dich-vu/${id}`, serviceData);
 export const deleteService = (id) => api.delete(`/dich-vu/${id}`);
+
+// Booking Service APIs
+export const getBookingServices = (bookingId) =>
+  api.get(`/dich-vu/dat-phong/${bookingId}`);
+export const addBookingService = (bookingId, serviceData) => {
+  console.log(`Adding service to booking ${bookingId}:`, serviceData);
+  return api.post(`/dich-vu/dat-phong/${bookingId}`, serviceData);
+};
+export const deleteBookingService = (serviceUsageId) => {
+  console.log(`Deleting service usage ${serviceUsageId}`);
+  return api.delete(`/dich-vu/su-dung/${serviceUsageId}`);
+};
 
 // Invoice APIs
 export const getInvoices = () => api.get("/hoa-don");
@@ -116,8 +129,5 @@ export const calculatePrice = (id) => {
   console.log(`Calculating price for booking ${id}`);
   return api.get(`/dat-phong/${id}/tinh-gia`);
 };
-
-// Không sử dụng API này vì server không hỗ trợ
-// export const createInvoice = (invoiceData) => api.post("/hoa-don", invoiceData);
 
 export default api;
