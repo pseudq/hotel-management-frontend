@@ -30,10 +30,10 @@ import {
   deleteBookingService,
   updateBooking,
   getRoomTypes,
+  getInvoices,
 } from "../apiService";
 
 // Import các component con
-import DashboardStats from "./dashboard/DashboardStats";
 import RoomStatusOverview from "./dashboard/RoomStatusOverview";
 import RoomList from "./dashboard/RoomList";
 import CheckInDialog from "./dashboard/CheckInDialog";
@@ -41,21 +41,28 @@ import CheckOutDialog from "./dashboard/CheckOutDialog";
 import ServiceDialog from "./dashboard/ServiceDialog";
 import RoomActionMenu from "./dashboard/RoomActionMenu";
 import RoomTransferDialog from "./dashboard/RoomTransferDialog";
+import BookingTable from "./dashboard/BookingTable";
+import BookingDetailsDialog from "./dashboard/BookingDetailsDialog";
 
 const Dashboard = () => {
   const theme = useTheme();
   const [rooms, setRooms] = useState([]);
   const [roomTypes, setRoomTypes] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [services, setServices] = useState([]);
   const [bookingServices, setBookingServices] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [checkOutDialogOpen, setCheckOutDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [bookingDetailsDialogOpen, setBookingDetailsDialogOpen] =
+    useState(false);
+  const [showInvoiceDetails, setShowInvoiceDetails] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkInData, setCheckInData] = useState({
     khach_hang_id: "",
@@ -76,20 +83,13 @@ const Dashboard = () => {
     severity: "success",
   });
 
-  // Thống kê giả định
-  const stats = {
-    occupancyRate: 68,
-    totalRevenue: 12500000,
-    totalCustomers: 42,
-    totalBookings: 56,
-  };
-
   useEffect(() => {
     fetchRooms();
     fetchRoomTypes();
     fetchCustomers();
     fetchBookings();
     fetchServices();
+    fetchInvoices();
   }, []);
 
   const fetchRooms = async () => {
@@ -136,6 +136,16 @@ const Dashboard = () => {
       setBookings(response.data);
     } catch (error) {
       console.error("Error fetching bookings:", error);
+    }
+  };
+
+  const fetchInvoices = async () => {
+    try {
+      const response = await getInvoices();
+      console.log("Invoices fetched:", response.data);
+      setInvoices(response.data);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
     }
   };
 
@@ -396,8 +406,9 @@ const Dashboard = () => {
         console.error("Error refreshing rooms:", roomError);
       }
 
-      // Làm mới danh sách bookings
+      // Làm mới danh sách bookings và invoices
       await fetchBookings();
+      await fetchInvoices();
 
       setSnackbar({
         open: true,
@@ -752,6 +763,18 @@ const Dashboard = () => {
     }
   };
 
+  // Xử lý xem chi tiết booking
+  const handleViewBookingDetails = (booking, showInvoice = false) => {
+    setSelectedBooking(booking);
+    setShowInvoiceDetails(showInvoice);
+    setBookingDetailsDialogOpen(true);
+  };
+
+  // Đóng dialog chi tiết booking
+  const handleBookingDetailsClose = () => {
+    setBookingDetailsDialogOpen(false);
+  };
+
   const getRoomStatusIcon = (status) => {
     switch (status) {
       case "trống":
@@ -832,9 +855,6 @@ const Dashboard = () => {
         Hotel Dashboard
       </Typography>
 
-      {/* Thống kê tổng quan */}
-      <DashboardStats stats={stats} />
-
       {/* Tổng quan trạng thái phòng */}
       <RoomStatusOverview roomStats={roomStats} />
 
@@ -844,6 +864,13 @@ const Dashboard = () => {
         onMenuOpen={handleMenuOpen}
         getRoomStatusIcon={getRoomStatusIcon}
         getRoomStatusColor={getRoomStatusColor}
+      />
+
+      {/* Bảng thông tin đặt phòng và hóa đơn */}
+      <BookingTable
+        bookings={bookings}
+        invoices={invoices}
+        onViewDetails={handleViewBookingDetails}
       />
 
       {/* Action Menu */}
@@ -900,6 +927,14 @@ const Dashboard = () => {
         availableRooms={availableRooms}
         roomTypes={roomTypes}
         currentBooking={getCurrentBooking(selectedRoom?.id)}
+      />
+
+      {/* Booking Details Dialog */}
+      <BookingDetailsDialog
+        open={bookingDetailsDialogOpen}
+        onClose={handleBookingDetailsClose}
+        booking={selectedBooking}
+        showInvoice={showInvoiceDetails}
       />
 
       {/* Snackbar for notifications */}
