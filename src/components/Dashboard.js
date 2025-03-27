@@ -31,6 +31,7 @@ import {
   updateBooking,
   getRoomTypes,
   getInvoices,
+  createCustomer,
 } from "../apiService";
 
 // Import các component con
@@ -81,6 +82,19 @@ const Dashboard = () => {
     open: false,
     message: "",
     severity: "success",
+  });
+  const [selectedFloor, setSelectedFloor] = useState("all");
+
+  // State cho tìm kiếm và tạo khách hàng mới
+  const [searchStatus, setSearchStatus] = useState(null); // null, "searching", "found", "not_found"
+  const [foundCustomer, setFoundCustomer] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [newCustomerData, setNewCustomerData] = useState({
+    ho_ten: "",
+    cmnd: "",
+    so_dien_thoai: "",
+    email: "",
+    dia_chi: "",
   });
 
   useEffect(() => {
@@ -209,20 +223,127 @@ const Dashboard = () => {
 
     console.log("Opening check-in dialog for room:", selectedRoom);
 
-    setCheckInData({
-      khach_hang_id: "",
-      phong_id: selectedRoom.id,
-      thoi_gian_vao: new Date().toISOString(),
-      ghi_chu: "",
-      trang_thai: "đã nhận",
-    });
+    // Reset form
+    resetCheckInForm();
 
     setCheckInDialogOpen(true);
     handleMenuClose();
   };
 
+  const resetCheckInForm = () => {
+    setCheckInData({
+      khach_hang_id: "",
+      phong_id: selectedRoom ? selectedRoom.id : "",
+      thoi_gian_vao: new Date().toISOString(),
+      ghi_chu: "",
+      trang_thai: "đã nhận",
+    });
+    setSearchStatus(null);
+    setFoundCustomer(null);
+    setNewCustomerData({
+      ho_ten: "",
+      cmnd: "",
+      so_dien_thoai: "",
+      email: "",
+      dia_chi: "",
+    });
+  };
+
   const handleCheckInClose = () => {
     setCheckInDialogOpen(false);
+  };
+
+  // Tìm kiếm khách hàng theo CCCD
+  const handleSearchCustomer = async (cccd) => {
+    setIsSearching(true);
+    setSearchStatus("searching");
+
+    try {
+      // Tìm kiếm trong danh sách khách hàng đã tải
+      const customer = customers.find((cust) => cust.cmnd === cccd);
+
+      if (customer) {
+        setFoundCustomer(customer);
+        setSearchStatus("found");
+        // Cập nhật ID khách hàng vào form check-in
+        setCheckInData({
+          ...checkInData,
+          khach_hang_id: customer.id,
+        });
+      } else {
+        setFoundCustomer(null);
+        setSearchStatus("not_found");
+        // Cập nhật CCCD vào form tạo khách hàng mới
+        setNewCustomerData({
+          ...newCustomerData,
+          cmnd: cccd,
+        });
+      }
+    } catch (error) {
+      console.error("Error searching for customer:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi tìm kiếm khách hàng: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+      setSearchStatus("not_found");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Tạo khách hàng mới
+  const handleCreateCustomer = async (customerData) => {
+    setLoading(true);
+
+    try {
+      // Kiểm tra dữ liệu
+      if (!customerData.ho_ten || !customerData.cmnd) {
+        setSnackbar({
+          open: true,
+          message: "Vui lòng nhập đầy đủ họ tên và CCCD",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Gọi API tạo khách hàng mới
+      const response = await createCustomer(customerData);
+      console.log("Customer created:", response.data);
+
+      // Cập nhật danh sách khách hàng
+      await fetchCustomers();
+
+      // Cập nhật ID khách hàng vào form check-in
+      setCheckInData({
+        ...checkInData,
+        khach_hang_id: response.data.id,
+      });
+
+      // Cập nhật trạng thái tìm kiếm
+      setFoundCustomer(response.data);
+      setSearchStatus("found");
+
+      setSnackbar({
+        open: true,
+        message: "Tạo khách hàng mới thành công",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error creating customer:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi tạo khách hàng mới: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCheckInSubmit = async () => {
@@ -230,10 +351,10 @@ const Dashboard = () => {
       setLoading(true);
 
       // Kiểm tra dữ liệu trước khi gửi
-      if (!checkInData.khach_hang_id) {
+      if (!checkInData.khach_hang_id && searchStatus !== "found") {
         setSnackbar({
           open: true,
-          message: "Vui lòng chọn khách hàng",
+          message: "Vui lòng chọn hoặc tạo khách hàng",
           severity: "error",
         });
         setLoading(false);
@@ -250,11 +371,23 @@ const Dashboard = () => {
         return;
       }
 
+      // Nếu đã tìm thấy khách hàng nhưng chưa cập nhật ID
+      if (
+        searchStatus === "found" &&
+        foundCustomer &&
+        !checkInData.khach_hang_id
+      ) {
+        setCheckInData({
+          ...checkInData,
+          khach_hang_id: foundCustomer.id,
+        });
+      }
+
       console.log("Submitting check-in with data:", checkInData);
 
       // Tạo booking với đúng định dạng API yêu cầu
       const bookingResponse = await createBooking({
-        khach_hang_id: checkInData.khach_hang_id,
+        khach_hang_id: checkInData.khach_hang_id || foundCustomer.id,
         phong_id: checkInData.phong_id,
         thoi_gian_vao: checkInData.thoi_gian_vao,
         ghi_chu: checkInData.ghi_chu,
@@ -830,6 +963,10 @@ const Dashboard = () => {
     (room) => room.trang_thai === "trống" && room.id !== selectedRoom?.id
   );
 
+  const handleFloorChange = (floor) => {
+    setSelectedFloor(floor);
+  };
+
   return (
     <Box>
       {loading && (
@@ -864,6 +1001,8 @@ const Dashboard = () => {
         onMenuOpen={handleMenuOpen}
         getRoomStatusIcon={getRoomStatusIcon}
         getRoomStatusColor={getRoomStatusColor}
+        selectedFloor={selectedFloor}
+        onFloorChange={handleFloorChange}
       />
 
       {/* Bảng thông tin đặt phòng và hóa đơn */}
@@ -894,6 +1033,14 @@ const Dashboard = () => {
         setCheckInData={setCheckInData}
         customers={customers}
         selectedRoom={selectedRoom}
+        onSearchCustomer={handleSearchCustomer}
+        onCreateCustomer={handleCreateCustomer}
+        searchStatus={searchStatus}
+        foundCustomer={foundCustomer}
+        isSearching={isSearching}
+        newCustomerData={newCustomerData}
+        setNewCustomerData={setNewCustomerData}
+        resetForm={resetCheckInForm}
       />
 
       {/* Check-Out Dialog */}
