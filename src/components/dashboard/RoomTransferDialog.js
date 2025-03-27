@@ -111,8 +111,8 @@ const RoomTransferDialog = ({
 
           {showPriceWarning && (
             <Alert severity="warning" sx={{ mb: 3 }}>
-              Lưu ý: Bạn đang chuyển sang loại phòng khác. Giá phòng sẽ được
-              tính theo phòng có giá cao hơn.
+              Lưu ý: Bạn đang chuyển sang loại phòng khác. Chỉ được chuyển sang
+              phòng có giá phòng cao hơn
             </Alert>
           )}
 

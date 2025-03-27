@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // eslint-disable-next-line
 import { getCustomers, createCustomer, deleteCustomer } from "../apiService";
 import {
   TextField,
@@ -7,12 +7,12 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  IconButton,
+  // IconButton,
   Typography,
   Paper,
   Grid,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+// import DeleteIcon from "@mui/icons-material/Delete";
 
 const CustomerManagement = () => {
   const [customers, setCustomers] = useState([]);
@@ -51,14 +51,14 @@ const CustomerManagement = () => {
     }
   };
 
-  const handleDeleteCustomer = async (id) => {
-    try {
-      await deleteCustomer(id);
-      fetchCustomers();
-    } catch (error) {
-      console.error("Error deleting customer:", error);
-    }
-  };
+  // const handleDeleteCustomer = async (id) => {
+  //   try {
+  //     await deleteCustomer(id);
+  //     fetchCustomers();
+  //   } catch (error) {
+  //     console.error("Error deleting customer:", error);
+  //   }
+  // };
 
   return (
     <Paper style={{ padding: 16 }}>
@@ -127,13 +127,13 @@ const CustomerManagement = () => {
                   secondary={`ID: ${customer.cmnd}, Phone: ${customer.so_dien_thoai}, Email: ${customer.email}, Address: ${customer.dia_chi}`}
                 />
                 <ListItemSecondaryAction>
-                  <IconButton
+                  {/* <IconButton
                     edge="end"
                     aria-label="delete"
                     onClick={() => handleDeleteCustomer(customer.id)}
                   >
                     <DeleteIcon />
-                  </IconButton>
+                  </IconButton> */}
                 </ListItemSecondaryAction>
               </ListItem>
             ))}

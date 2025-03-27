@@ -20,7 +20,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.total}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Total Rooms
+              Tổng phòng
             </Typography>
           </Box>
         </Grid>
@@ -37,7 +37,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.available}
             </Typography>
             <Typography variant="body1" color="success.dark">
-              Available
+              Phòng trống
             </Typography>
           </Box>
         </Grid>
@@ -54,7 +54,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.occupied}
             </Typography>
             <Typography variant="body1" color="error.dark">
-              Occupied
+              Phòng đang ở
             </Typography>
           </Box>
         </Grid>
@@ -71,7 +71,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.cleaning}
             </Typography>
             <Typography variant="body1" color="warning.dark">
-              Cleaning
+              Đang dọn
             </Typography>
           </Box>
         </Grid>

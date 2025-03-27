@@ -1,10 +1,11 @@
 "use client";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 const PrivateRoute = () => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -14,14 +15,22 @@ const PrivateRoute = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
+          flexDirection: "column",
         }}
       >
         <CircularProgress />
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Đang tải...
+        </Typography>
       </Box>
     );
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
+  return isAuthenticated ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/login" state={{ from: location }} replace />
+  );
 };
 
 export default PrivateRoute;

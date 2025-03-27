@@ -1,11 +1,12 @@
 "use client";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import AccessDenied from "./AccessDenied";
 
 const RoleBasedRoute = ({ allowedRoles }) => {
   const { user, loading, isAuthenticated } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -28,7 +29,7 @@ const RoleBasedRoute = ({ allowedRoles }) => {
 
   // Nếu người dùng chưa đăng nhập, chuyển hướng đến trang đăng nhập
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Kiểm tra vai trò người dùng

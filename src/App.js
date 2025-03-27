@@ -160,6 +160,15 @@ function App() {
                   </DashboardLayout>
                 }
               />
+
+              <Route
+                path="/customers"
+                element={
+                  <DashboardLayout>
+                    <CustomerManagement />
+                  </DashboardLayout>
+                }
+              />
             </Route>
 
             {/* Route chỉ cho quản lý */}
@@ -178,15 +187,6 @@ function App() {
                 element={
                   <DashboardLayout>
                     <RoomTypeManagement />
-                  </DashboardLayout>
-                }
-              />
-
-              <Route
-                path="/customers"
-                element={
-                  <DashboardLayout>
-                    <CustomerManagement />
                   </DashboardLayout>
                 }
               />

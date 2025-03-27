@@ -46,10 +46,10 @@ const RoomCard = ({
           <KingBed sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
           <Box>
             <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
-              Room {room.so_phong}
+              Phòng {room.so_phong}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Floor {room.so_tang} • {room.ten_loai_phong || "Standard"}
+              Tầng {room.so_tang} • {room.ten_loai_phong || "Standard"}
             </Typography>
           </Box>
         </Box>
@@ -78,7 +78,7 @@ const RoomCard = ({
             color="primary"
             onClick={(e) => onMenuOpen(e, room)}
           >
-            Actions
+            Hành động
           </Button>
         </Box>
       </CardContent>

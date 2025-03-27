@@ -50,25 +50,25 @@ const ServiceDialog = ({
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Typography variant="h5" component="div" fontWeight="bold">
-          Room Services
+          Dịch vụ phòng
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Room {selectedRoom?.so_phong}
+          Phòng {selectedRoom?.so_phong}
         </Typography>
       </DialogTitle>
       <DialogContent dividers>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h6" gutterBottom>
-            Add New Service
+            Thêm dịch vụ
           </Typography>
           <Grid container spacing={2} alignItems="flex-end">
             <Grid item xs={12} sm={5}>
               <FormControl fullWidth>
-                <InputLabel id="service-select-label">Service</InputLabel>
+                <InputLabel id="service-select-label">Loại dịch vụ</InputLabel>
                 <Select
                   labelId="service-select-label"
                   value={newServiceData.dich_vu_id}
-                  label="Service"
+                  label="Loại dịch vụ"
                   onChange={(e) =>
                     setNewServiceData({
                       ...newServiceData,
@@ -88,7 +88,7 @@ const ServiceDialog = ({
             <Grid item xs={12} sm={2}>
               <TextField
                 fullWidth
-                label="Quantity"
+                label="Số lượng"
                 type="number"
                 InputProps={{ inputProps: { min: 1 } }}
                 value={newServiceData.so_luong}
@@ -103,7 +103,7 @@ const ServiceDialog = ({
             <Grid item xs={12} sm={3}>
               <TextField
                 fullWidth
-                label="Notes"
+                label="Ghi chú(nếu có)"
                 value={newServiceData.ghi_chu}
                 onChange={(e) =>
                   setNewServiceData({
@@ -121,7 +121,7 @@ const ServiceDialog = ({
                 onClick={onAddService}
                 fullWidth
               >
-                Add
+                Thêm
               </Button>
             </Grid>
           </Grid>
@@ -130,20 +130,20 @@ const ServiceDialog = ({
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="h6" gutterBottom>
-          Service History
+          Các dịch vụ hiện có
         </Typography>
         {bookingServices.length > 0 ? (
           <TableContainer component={Paper} variant="outlined">
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Service</TableCell>
-                  <TableCell align="right">Price</TableCell>
-                  <TableCell align="right">Quantity</TableCell>
-                  <TableCell align="right">Total</TableCell>
-                  <TableCell>Notes</TableCell>
-                  <TableCell align="right">Time</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>Dịch vụ</TableCell>
+                  <TableCell align="right">Giá</TableCell>
+                  <TableCell align="right">Số Lượng</TableCell>
+                  <TableCell align="right">Tổng cộng</TableCell>
+                  <TableCell>Ghi chú</TableCell>
+                  <TableCell align="right">Thời gian</TableCell>
+                  <TableCell align="center">Hành động</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -191,14 +191,14 @@ const ServiceDialog = ({
             }}
           >
             <Typography color="text.secondary">
-              No services have been added yet
+              Chưa dùng dịch vụ nào
             </Typography>
           </Box>
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onClose} variant="outlined">
-          Close
+          Đóng
         </Button>
       </DialogActions>
     </Dialog>

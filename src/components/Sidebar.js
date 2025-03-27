@@ -70,36 +70,41 @@ const Sidebar = () => {
   // Định nghĩa các menu item với thông tin về quyền truy cập
   const menuItems = [
     {
-      text: "Dashboard",
+      text: "Trang chủ",
       icon: <Home />,
       path: "/",
       roles: ["quản lý", "nhân viên"],
     },
     { text: "Rooms", icon: <KingBed />, path: "/rooms", roles: ["quản lý"] },
     {
-      text: "Room Types",
+      text: "Cài đặt phòng",
       icon: <Category />,
       path: "/room-types",
       roles: ["quản lý"],
     },
     {
-      text: "Customers",
+      text: "Quản lý khách",
       icon: <People />,
       path: "/customers",
+      roles: ["quản lý", "nhân viên"],
+    },
+    {
+      text: "QL đặt phòng",
+      icon: <Book />,
+      path: "/bookings",
       roles: ["quản lý"],
     },
-    { text: "Bookings", icon: <Book />, path: "/bookings", roles: ["quản lý"] },
     {
-      text: "Services",
+      text: "QL dịch vụ",
       icon: <RoomService />,
       path: "/services",
       roles: ["quản lý"],
     },
     {
-      text: "Invoices",
+      text: "QL hóa đơn",
       icon: <Receipt />,
       path: "/invoices",
-      roles: ["quản lý"],
+      roles: ["quản lý", "nhân viên"],
     },
   ];
 
@@ -126,7 +131,7 @@ const Sidebar = () => {
       >
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <img
-            src="/placeholder.svg?height=40&width=40"
+            src="/Frame1000003404.svg"
             alt="Logo"
             style={{ marginRight: 12, height: 40, width: 40 }}
           />
@@ -135,7 +140,7 @@ const Sidebar = () => {
             noWrap
             sx={{ fontWeight: 700, color: "primary.main" }}
           >
-            HOTEL MANAGER
+            HỆ THỐNG QLKS
           </Typography>
         </Box>
         {/* {open && (

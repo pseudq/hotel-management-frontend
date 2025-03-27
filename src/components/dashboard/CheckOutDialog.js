@@ -31,10 +31,10 @@ const CheckOutDialog = ({
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Typography variant="h5" component="div" fontWeight="bold">
-          Check Out
+          Trả phòng
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Room {selectedRoom?.so_phong}
+          Phòng {selectedRoom?.so_phong}
         </Typography>
       </DialogTitle>
       <DialogContent dividers>
@@ -42,7 +42,7 @@ const CheckOutDialog = ({
           <Box sx={{ mt: 1 }}>
             <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Room Charges
+                Tiền phòng
               </Typography>
               <Box sx={{ ml: 2 }}>
                 {checkOutData.tien_phong.chiTiet.map((detail, index) => (
@@ -67,7 +67,7 @@ const CheckOutDialog = ({
               </Box>
               <Divider sx={{ my: 1.5 }} />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="subtitle2">Total Room Charge</Typography>
+                <Typography variant="subtitle2">Tổng tiền phòng</Typography>
                 <Typography variant="subtitle2" fontWeight="bold">
                   {new Intl.NumberFormat("vi-VN").format(
                     checkOutData.tien_phong.tongTien
@@ -79,12 +79,10 @@ const CheckOutDialog = ({
 
             <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Service Charges
+                Tiền dịch vụ
               </Typography>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="subtitle2">
-                  Total Service Charge
-                </Typography>
+                <Typography variant="subtitle2">Tổng tiền dịch vụ</Typography>
                 <Typography variant="subtitle2" fontWeight="bold">
                   {new Intl.NumberFormat("vi-VN").format(
                     checkOutData.tien_dich_vu.tong_tien
@@ -110,7 +108,7 @@ const CheckOutDialog = ({
                   alignItems: "center",
                 }}
               >
-                <Typography variant="h6">Total Amount</Typography>
+                <Typography variant="h6">Tổng tiền</Typography>
                 <Typography variant="h5" fontWeight="bold">
                   {new Intl.NumberFormat("vi-VN").format(
                     checkOutData.tong_tien
@@ -122,16 +120,16 @@ const CheckOutDialog = ({
           </Box>
         ) : (
           <Box sx={{ p: 2, textAlign: "center" }}>
-            <Typography>Loading price information...</Typography>
+            <Typography>Đang tính tiền...</Typography>
           </Box>
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onClose} variant="outlined">
-          Cancel
+          Thoát
         </Button>
         <Button onClick={onSubmit} variant="contained" disabled={!checkOutData}>
-          Confirm Check Out
+          Xác nhận trả phòng
         </Button>
       </DialogActions>
     </Dialog>

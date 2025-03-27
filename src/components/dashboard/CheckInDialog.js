@@ -322,7 +322,7 @@ const CheckInDialog = ({
           variant="contained"
           disabled={!checkInData.khach_hang_id && searchStatus !== "found"}
         >
-          Check In
+          Nhận phòng
         </Button>
       </DialogActions>
     </Dialog>

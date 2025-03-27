@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -24,13 +24,17 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login, error, loading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Nếu đã đăng nhập, chuyển hướng về trang chủ
+  // Lấy đường dẫn trước đó nếu có
+  const from = location.state?.from?.pathname || "/";
+
+  // Nếu đã đăng nhập, chuyển hướng về trang trước đó hoặc trang chủ
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, from]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

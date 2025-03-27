@@ -43,12 +43,12 @@ const InvoiceManagement = () => {
   return (
     <Paper style={{ padding: 16 }}>
       <Typography variant="h4" gutterBottom>
-        Invoice Management
+        Quản lý hóa đơn
       </Typography>
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Typography variant="h6" gutterBottom>
-            Invoice List
+            Danh sách hóa đơn
           </Typography>
           <List>
             {invoices.map((invoice) => (

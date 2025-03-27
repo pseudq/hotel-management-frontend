@@ -17,19 +17,31 @@ export const AuthProvider = ({ children }) => {
   // Kiểm tra xem người dùng đã đăng nhập chưa khi tải trang
   useEffect(() => {
     const initAuth = async () => {
+      setLoading(true);
       const storedUser = localStorage.getItem("user");
       const token = localStorage.getItem("token");
 
       if (storedUser && token) {
         try {
+          // Đặt user từ localStorage trước
           setUser(JSON.parse(storedUser));
+
           // Kiểm tra token còn hợp lệ không
-          await checkAuth();
+          const response = await checkAuth();
+
+          // Nếu API trả về thông tin người dùng mới, cập nhật lại
+          if (response && response.data) {
+            setUser(response.data);
+            localStorage.setItem("user", JSON.stringify(response.data));
+          }
         } catch (error) {
           console.error("Token invalid or expired:", error);
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          setUser(null);
+          // Chỉ xóa token và user nếu lỗi là 401 (Unauthorized)
+          if (error.response && error.response.status === 401) {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            setUser(null);
+          }
         }
       }
 
