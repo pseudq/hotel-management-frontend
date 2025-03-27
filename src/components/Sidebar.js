@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Drawer,
   List,
@@ -20,7 +20,7 @@ import {
   Badge,
   Menu,
   MenuItem,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Home,
   KingBed,
@@ -35,29 +35,37 @@ import {
   Settings,
   Logout,
   Person,
-} from "@mui/icons-material"
-import { Link, useLocation } from "react-router-dom"
+} from "@mui/icons-material";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-const drawerWidth = 260
+const drawerWidth = 260;
 
 const Sidebar = () => {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const [open, setOpen] = useState(!isMobile)
-  const location = useLocation()
-  const [anchorEl, setAnchorEl] = useState(null)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [open, setOpen] = useState(!isMobile);
+  const location = useLocation();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const { user, logout } = useAuth(); // eslint-disable-next-line
+  const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
-    setOpen(!open)
-  }
+    setOpen(!open);
+  };
 
   const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleMenuClose();
+    logout();
+  };
 
   const menuItems = [
     { text: "Dashboard", icon: <Home />, path: "/" },
@@ -67,18 +75,35 @@ const Sidebar = () => {
     { text: "Bookings", icon: <Book />, path: "/bookings" },
     { text: "Services", icon: <RoomService />, path: "/services" },
     { text: "Invoices", icon: <Receipt />, path: "/invoices" },
-  ]
+  ];
+
+  // Lấy chữ cái đầu tiên của tên người dùng cho Avatar
+  const getInitials = () => {
+    if (!user || !user.ho_ten) return "U";
+    return user.ho_ten.charAt(0).toUpperCase();
+  };
 
   const drawer = (
     <>
-      <Toolbar sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: [1] }}>
+      <Toolbar
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: [1],
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <img
             src="/placeholder.svg?height=40&width=40"
             alt="Logo"
             style={{ marginRight: 12, height: 40, width: 40 }}
           />
-          <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: "primary.main" }}>
+          <Typography
+            variant="h6"
+            noWrap
+            sx={{ fontWeight: 700, color: "primary.main" }}
+          >
             HOTEL MANAGER
           </Typography>
         </Box>
@@ -100,14 +125,26 @@ const Sidebar = () => {
               sx={{
                 mb: 1,
                 borderRadius: 2,
-                backgroundColor: location.pathname === item.path ? "primary.light" : "transparent",
-                color: location.pathname === item.path ? "white" : "text.primary",
+                backgroundColor:
+                  location.pathname === item.path
+                    ? "primary.light"
+                    : "transparent",
+                color:
+                  location.pathname === item.path ? "white" : "text.primary",
                 "&:hover": {
-                  backgroundColor: location.pathname === item.path ? "primary.main" : "action.hover",
+                  backgroundColor:
+                    location.pathname === item.path
+                      ? "primary.main"
+                      : "action.hover",
                 },
               }}
             >
-              <ListItemIcon sx={{ color: location.pathname === item.path ? "white" : "inherit", minWidth: 40 }}>
+              <ListItemIcon
+                sx={{
+                  color: location.pathname === item.path ? "white" : "inherit",
+                  minWidth: 40,
+                }}
+              >
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />
@@ -134,7 +171,7 @@ const Sidebar = () => {
         </List>
       </Box>
     </>
-  )
+  );
 
   return (
     <>
@@ -168,7 +205,7 @@ const Sidebar = () => {
                 </Badge>
               </IconButton>
             </Tooltip>
-            <Tooltip title="Account">
+            <Tooltip title={user?.ho_ten || "Account"}>
               <IconButton
                 size="large"
                 edge="end"
@@ -177,7 +214,9 @@ const Sidebar = () => {
                 onClick={handleProfileMenuOpen}
                 color="inherit"
               >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>A</Avatar>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
+                  {getInitials()}
+                </Avatar>
               </IconButton>
             </Tooltip>
           </Box>
@@ -197,6 +236,15 @@ const Sidebar = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
+        <Box sx={{ px: 2, py: 1, minWidth: 200 }}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            {user?.ho_ten || "User"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {user?.vai_tro || "Role"}
+          </Typography>
+        </Box>
+        <Divider />
         <MenuItem onClick={handleMenuClose}>
           <ListItemIcon>
             <Person fontSize="small" />
@@ -210,7 +258,7 @@ const Sidebar = () => {
           Settings
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
@@ -234,8 +282,7 @@ const Sidebar = () => {
         {drawer}
       </Drawer>
     </>
-  )
-}
+  );
+};
 
-export default Sidebar
-
+export default Sidebar;

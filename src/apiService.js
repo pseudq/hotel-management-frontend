@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://54.254.23.63:5000/api";
+// const API_URL = "http://54.254.23.63:5000/api";
+const API_URL = "http://localhost:5000/api";
 const API_KEY = "your_api_key";
 
 // Tạo instance axios với interceptors để xử lý lỗi và logging
@@ -21,6 +22,13 @@ api.interceptors.request.use(
       `API Request: ${config.method.toUpperCase()} ${config.url}`,
       config.data || {}
     );
+
+    // Thêm token vào header nếu có
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => {
@@ -47,6 +55,16 @@ api.interceptors.response.use(
         }: ${error.config.method.toUpperCase()} ${error.config.url}`,
         error.response.data
       );
+
+      // Nếu token hết hạn (401), đăng xuất người dùng
+      if (error.response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        // Redirect to login if not already there
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }
     } else if (error.request) {
       // Request đã được gửi nhưng không nhận được response
       console.error("API No Response:", error.request);
@@ -57,6 +75,14 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Auth APIs
+export const login = (credentials) => api.post("/auth/login", credentials);
+export const checkAuth = () => api.get("/auth/me");
+export const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+};
 
 // Room APIs
 export const getRooms = () => api.get("/phong");

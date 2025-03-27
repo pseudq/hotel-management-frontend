@@ -1,13 +1,21 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom"
-import { CssBaseline, Box, ThemeProvider, createTheme } from "@mui/material"
-import Sidebar from "./components/Sidebar"
-import Dashboard from "./components/Dashboard"
-import RoomManagement from "./components/RoomManagement"
-import RoomTypeManagement from "./components/RoomTypeManagement"
-import CustomerManagement from "./components/CustomerManagement"
-import BookingManagement from "./components/BookingManagement"
-import ServiceManagement from "./components/ServiceManagement"
-import InvoiceManagement from "./components/InvoiceManagement"
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import { CssBaseline, Box, ThemeProvider, createTheme } from "@mui/material";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./components/Dashboard";
+import RoomManagement from "./components/RoomManagement";
+import RoomTypeManagement from "./components/RoomTypeManagement";
+import CustomerManagement from "./components/CustomerManagement";
+import BookingManagement from "./components/BookingManagement";
+import ServiceManagement from "./components/ServiceManagement";
+import InvoiceManagement from "./components/InvoiceManagement";
+import Login from "./components/Login";
+import PrivateRoute from "./components/PrivateRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Tạo theme hiện đại hơn
 const theme = createTheme({
@@ -90,7 +98,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
           overflow: "hidden",
         },
       },
@@ -99,44 +108,214 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
         },
       },
     },
   },
-})
+});
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <Router>
-        <CssBaseline />
-        <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
-          <Sidebar />
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              p: 3,
-              pt: { xs: 8, sm: 9 },
-              overflow: "auto",
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/rooms" element={<RoomManagement />} />
-              <Route path="/room-types" element={<RoomTypeManagement />} />
-              <Route path="/customers" element={<CustomerManagement />} />
-              <Route path="/bookings" element={<BookingManagement />} />
-              <Route path="/services" element={<ServiceManagement />} />
-              <Route path="/invoices" element={<InvoiceManagement />} />
-            </Routes>
-          </Box>
-        </Box>
+        <AuthProvider>
+          <CssBaseline />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+
+            <Route element={<PrivateRoute />}>
+              <Route
+                path="/"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <Dashboard />
+                    </Box>
+                  </Box>
+                }
+              />
+
+              <Route
+                path="/rooms"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <RoomManagement />
+                    </Box>
+                  </Box>
+                }
+              />
+
+              <Route
+                path="/room-types"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <RoomTypeManagement />
+                    </Box>
+                  </Box>
+                }
+              />
+
+              <Route
+                path="/customers"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <CustomerManagement />
+                    </Box>
+                  </Box>
+                }
+              />
+
+              <Route
+                path="/bookings"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <BookingManagement />
+                    </Box>
+                  </Box>
+                }
+              />
+
+              <Route
+                path="/services"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <ServiceManagement />
+                    </Box>
+                  </Box>
+                }
+              />
+
+              <Route
+                path="/invoices"
+                element={
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minHeight: "100vh",
+                      bgcolor: "background.default",
+                    }}
+                  >
+                    <Sidebar />
+                    <Box
+                      component="main"
+                      sx={{
+                        flexGrow: 1,
+                        p: 3,
+                        pt: { xs: 8, sm: 9 },
+                        overflow: "auto",
+                      }}
+                    >
+                      <InvoiceManagement />
+                    </Box>
+                  </Box>
+                }
+              />
+            </Route>
+
+            {/* Redirect to login if no route matches */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
-
+export default App;
