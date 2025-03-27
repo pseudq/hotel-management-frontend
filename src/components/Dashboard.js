@@ -2,41 +2,19 @@
 
 import { useState, useEffect } from "react";
 import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Box,
-  Chip,
-  IconButton,
-  Paper,
-  Divider,
-  Avatar,
-  Stack,
-  LinearProgress,
-  useTheme,
+  Typography,
+  CircularProgress,
   Snackbar,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
-  CircularProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
+  useTheme,
 } from "@mui/material";
+import {
+  CheckCircle,
+  Person,
+  CleaningServices,
+  DoNotDisturb,
+} from "@mui/icons-material";
 import {
   getRooms,
   createBooking,
@@ -51,22 +29,15 @@ import {
   addBookingService,
   deleteBookingService,
 } from "../apiService";
-import {
-  KingBed,
-  Person,
-  CleaningServices,
-  MoreVert,
-  CheckCircle,
-  DoNotDisturb,
-  Refresh,
-  TrendingUp,
-  AttachMoney,
-  People,
-  CalendarToday,
-  RoomService,
-  Delete,
-  Add,
-} from "@mui/icons-material";
+
+// Import các component con
+import DashboardStats from "./dashboard/DashboardStats";
+import RoomStatusOverview from "./dashboard/RoomStatusOverview";
+import RoomList from "./dashboard/RoomList";
+import CheckInDialog from "./dashboard/CheckInDialog";
+import CheckOutDialog from "./dashboard/CheckOutDialog";
+import ServiceDialog from "./dashboard/ServiceDialog";
+import RoomActionMenu from "./dashboard/RoomActionMenu";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -697,13 +668,6 @@ const Dashboard = () => {
     cleaning: rooms.filter((room) => room.trang_thai === "đang dọn").length,
   };
 
-  // Tìm tên dịch vụ từ ID
-  // eslint-disable-next-line
-  const getServiceNameById = (id) => {
-    const service = services.find((service) => service.id === id);
-    return service ? service.ten_dich_vu : "Unknown Service";
-  };
-
   return (
     <Box>
       {loading && (
@@ -730,654 +694,62 @@ const Dashboard = () => {
       </Typography>
 
       {/* Thống kê tổng quan */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar sx={{ bgcolor: "primary.light", mr: 2 }}>
-                  <KingBed />
-                </Avatar>
-                <Typography variant="h6" color="text.secondary">
-                  Occupancy Rate
-                </Typography>
-              </Box>
-              <Typography variant="h4" component="div" sx={{ mb: 1 }}>
-                {stats.occupancyRate}%
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={stats.occupancyRate}
-                sx={{ height: 8, borderRadius: 4 }}
-              />
-              <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                <TrendingUp
-                  sx={{ color: "success.main", mr: 1, fontSize: 16 }}
-                />
-                <Typography variant="body2" color="success.main">
-                  +5.2% from last week
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar sx={{ bgcolor: "success.light", mr: 2 }}>
-                  <AttachMoney />
-                </Avatar>
-                <Typography variant="h6" color="text.secondary">
-                  Revenue
-                </Typography>
-              </Box>
-              <Typography variant="h4" component="div">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(stats.totalRevenue)}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                <TrendingUp
-                  sx={{ color: "success.main", mr: 1, fontSize: 16 }}
-                />
-                <Typography variant="body2" color="success.main">
-                  +12.5% from last month
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar sx={{ bgcolor: "info.light", mr: 2 }}>
-                  <People />
-                </Avatar>
-                <Typography variant="h6" color="text.secondary">
-                  Customers
-                </Typography>
-              </Box>
-              <Typography variant="h4" component="div">
-                {stats.totalCustomers}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                <TrendingUp
-                  sx={{ color: "success.main", mr: 1, fontSize: 16 }}
-                />
-                <Typography variant="body2" color="success.main">
-                  +8.1% from last month
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: "100%" }}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Avatar sx={{ bgcolor: "warning.light", mr: 2 }}>
-                  <CalendarToday />
-                </Avatar>
-                <Typography variant="h6" color="text.secondary">
-                  Bookings
-                </Typography>
-              </Box>
-              <Typography variant="h4" component="div">
-                {stats.totalBookings}
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                <TrendingUp
-                  sx={{ color: "success.main", mr: 1, fontSize: 16 }}
-                />
-                <Typography variant="body2" color="success.main">
-                  +3.7% from last week
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <DashboardStats stats={stats} />
 
       {/* Tổng quan trạng thái phòng */}
-      <Paper sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Room Status Overview
-        </Typography>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={6} sm={3}>
-            <Box
-              sx={{
-                textAlign: "center",
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "background.default",
-              }}
-            >
-              <Typography variant="h3" color="text.primary">
-                {roomStats.total}
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Total Rooms
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Box
-              sx={{
-                textAlign: "center",
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "success.light",
-              }}
-            >
-              <Typography variant="h3" color="success.dark">
-                {roomStats.available}
-              </Typography>
-              <Typography variant="body1" color="success.dark">
-                Available
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Box
-              sx={{
-                textAlign: "center",
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "error.light",
-              }}
-            >
-              <Typography variant="h3" color="error.dark">
-                {roomStats.occupied}
-              </Typography>
-              <Typography variant="body1" color="error.dark">
-                Occupied
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Box
-              sx={{
-                textAlign: "center",
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "warning.light",
-              }}
-            >
-              <Typography variant="h3" color="warning.dark">
-                {roomStats.cleaning}
-              </Typography>
-              <Typography variant="body1" color="warning.dark">
-                Cleaning
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
+      <RoomStatusOverview roomStats={roomStats} />
 
       {/* Danh sách phòng */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 2 }}>
-        Room Management
-      </Typography>
-      <Grid container spacing={2}>
-        {rooms.map((room) => {
-          const statusColor = getRoomStatusColor(room.trang_thai);
-          return (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
-              <Card sx={{ height: "100%", position: "relative" }}>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    top: 12,
-                    right: 12,
-                    zIndex: 1,
-                  }}
-                >
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleMenuOpen(e, room)}
-                    sx={{ bgcolor: "background.paper", boxShadow: 1 }}
-                  >
-                    <MoreVert fontSize="small" />
-                  </IconButton>
-                </Box>
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <KingBed
-                      sx={{ fontSize: 40, color: "primary.main", mr: 2 }}
-                    />
-                    <Box>
-                      <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
-                        Room {room.so_phong}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Floor {room.so_tang} •{" "}
-                        {room.ten_loai_phong || "Standard"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Divider sx={{ my: 1.5 }} />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      mt: 2,
-                    }}
-                  >
-                    <Chip
-                      icon={getRoomStatusIcon(room.trang_thai)}
-                      label={room.trang_thai}
-                      size="small"
-                      sx={{
-                        bgcolor: statusColor.bg,
-                        color: statusColor.color,
-                        fontWeight: "medium",
-                      }}
-                    />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      color="primary"
-                      onClick={(e) => handleMenuOpen(e, room)}
-                    >
-                      Actions
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
+      <RoomList
+        rooms={rooms}
+        onMenuOpen={handleMenuOpen}
+        getRoomStatusIcon={getRoomStatusIcon}
+        getRoomStatusColor={getRoomStatusColor}
+      />
 
       {/* Action Menu */}
-      <Menu
+      <RoomActionMenu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: { borderRadius: 2, minWidth: 180 },
-        }}
-      >
-        {selectedRoom?.trang_thai === "trống" && (
-          <MenuItem onClick={handleCheckInOpen} sx={{ py: 1.5 }}>
-            <Person sx={{ mr: 2, fontSize: 20 }} /> Check In
-          </MenuItem>
-        )}
-        {selectedRoom?.trang_thai === "đang sử dụng" && (
-          <>
-            <MenuItem onClick={handleCheckOutOpen} sx={{ py: 1.5 }}>
-              <CheckCircle sx={{ mr: 2, fontSize: 20 }} /> Check Out
-            </MenuItem>
-            <MenuItem onClick={handleServiceDialogOpen} sx={{ py: 1.5 }}>
-              <RoomService sx={{ mr: 2, fontSize: 20 }} /> Add Services
-            </MenuItem>
-          </>
-        )}
-        {selectedRoom?.trang_thai === "đang dọn" && (
-          <MenuItem onClick={handleMarkAsCleaned} sx={{ py: 1.5 }}>
-            <Refresh sx={{ mr: 2, fontSize: 20 }} /> Mark as Cleaned
-          </MenuItem>
-        )}
-      </Menu>
+        selectedRoom={selectedRoom}
+        onCheckIn={handleCheckInOpen}
+        onCheckOut={handleCheckOutOpen}
+        onAddService={handleServiceDialogOpen}
+        onMarkAsCleaned={handleMarkAsCleaned}
+      />
 
       {/* Check-In Dialog */}
-      <Dialog
+      <CheckInDialog
         open={checkInDialogOpen}
         onClose={handleCheckInClose}
-        PaperProps={{
-          sx: { borderRadius: 3 },
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" component="div" fontWeight="bold">
-            Check In
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Room {selectedRoom?.so_phong}
-          </Typography>
-        </DialogTitle>
-        <DialogContent dividers>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <FormControl fullWidth>
-              <InputLabel id="customer-select-label">Customer</InputLabel>
-              <Select
-                labelId="customer-select-label"
-                value={checkInData.khach_hang_id}
-                label="Customer"
-                onChange={(e) =>
-                  setCheckInData({
-                    ...checkInData,
-                    khach_hang_id: e.target.value,
-                  })
-                }
-              >
-                {customers.map((customer) => (
-                  <MenuItem key={customer.id} value={customer.id}>
-                    {customer.ho_ten} - {customer.cmnd}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Notes"
-              name="ghi_chu"
-              value={checkInData.ghi_chu}
-              onChange={(e) =>
-                setCheckInData({ ...checkInData, ghi_chu: e.target.value })
-              }
-              multiline
-              rows={3}
-              variant="outlined"
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={handleCheckInClose} variant="outlined">
-            Cancel
-          </Button>
-          <Button onClick={handleCheckInSubmit} variant="contained">
-            Check In
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSubmit={handleCheckInSubmit}
+        checkInData={checkInData}
+        setCheckInData={setCheckInData}
+        customers={customers}
+        selectedRoom={selectedRoom}
+      />
 
       {/* Check-Out Dialog */}
-      <Dialog
+      <CheckOutDialog
         open={checkOutDialogOpen}
         onClose={handleCheckOutClose}
-        PaperProps={{
-          sx: { borderRadius: 3 },
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" component="div" fontWeight="bold">
-            Check Out
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Room {selectedRoom?.so_phong}
-          </Typography>
-        </DialogTitle>
-        <DialogContent dividers>
-          {checkOutData ? (
-            <Box sx={{ mt: 1 }}>
-              <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Room Charges
-                </Typography>
-                <Box sx={{ ml: 2 }}>
-                  {checkOutData.tien_phong.chiTiet.map((detail, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        mb: 1,
-                      }}
-                    >
-                      <Typography variant="body2">
-                        {detail.loaiTinh}: {detail.soLuong} x{" "}
-                        {new Intl.NumberFormat("vi-VN").format(detail.donGia)}{" "}
-                        VND
-                      </Typography>
-                      <Typography variant="body2" fontWeight="medium">
-                        {new Intl.NumberFormat("vi-VN").format(
-                          detail.thanhTien
-                        )}{" "}
-                        VND
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-                <Divider sx={{ my: 1.5 }} />
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="subtitle2">Total Room Charge</Typography>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {new Intl.NumberFormat("vi-VN").format(
-                      checkOutData.tien_phong.tongTien
-                    )}{" "}
-                    VND
-                  </Typography>
-                </Box>
-              </Paper>
-
-              <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  Service Charges
-                </Typography>
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="subtitle2">
-                    Total Service Charge
-                  </Typography>
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {new Intl.NumberFormat("vi-VN").format(
-                      checkOutData.tien_dich_vu.tong_tien
-                    )}{" "}
-                    VND
-                  </Typography>
-                </Box>
-              </Paper>
-
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 2,
-                  borderRadius: 2,
-                  bgcolor: "primary.light",
-                  color: "white",
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="h6">Total Amount</Typography>
-                  <Typography variant="h5" fontWeight="bold">
-                    {new Intl.NumberFormat("vi-VN").format(
-                      checkOutData.tong_tien
-                    )}{" "}
-                    VND
-                  </Typography>
-                </Box>
-              </Paper>
-            </Box>
-          ) : (
-            <Box sx={{ p: 2, textAlign: "center" }}>
-              <Typography>Loading price information...</Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={handleCheckOutClose} variant="outlined">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleCheckOutSubmit}
-            variant="contained"
-            disabled={!checkOutData}
-          >
-            Confirm Check Out
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSubmit={handleCheckOutSubmit}
+        checkOutData={checkOutData}
+        selectedRoom={selectedRoom}
+      />
 
       {/* Service Dialog */}
-      <Dialog
+      <ServiceDialog
         open={serviceDialogOpen}
         onClose={handleServiceDialogClose}
-        PaperProps={{
-          sx: { borderRadius: 3 },
-        }}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" component="div" fontWeight="bold">
-            Room Services
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Room {selectedRoom?.so_phong}
-          </Typography>
-        </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Add New Service
-            </Typography>
-            <Grid container spacing={2} alignItems="flex-end">
-              <Grid item xs={12} sm={5}>
-                <FormControl fullWidth>
-                  <InputLabel id="service-select-label">Service</InputLabel>
-                  <Select
-                    labelId="service-select-label"
-                    value={newServiceData.dich_vu_id}
-                    label="Service"
-                    onChange={(e) =>
-                      setNewServiceData({
-                        ...newServiceData,
-                        dich_vu_id: e.target.value,
-                      })
-                    }
-                  >
-                    {services.map((service) => (
-                      <MenuItem key={service.id} value={service.id}>
-                        {service.ten_dich_vu} -{" "}
-                        {new Intl.NumberFormat("vi-VN").format(service.gia)} VND
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={2}>
-                <TextField
-                  fullWidth
-                  label="Quantity"
-                  type="number"
-                  InputProps={{ inputProps: { min: 1 } }}
-                  value={newServiceData.so_luong}
-                  onChange={(e) =>
-                    setNewServiceData({
-                      ...newServiceData,
-                      so_luong: Number.parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  fullWidth
-                  label="Notes"
-                  value={newServiceData.ghi_chu}
-                  onChange={(e) =>
-                    setNewServiceData({
-                      ...newServiceData,
-                      ghi_chu: e.target.value,
-                    })
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} sm={2}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<Add />}
-                  onClick={handleAddService}
-                  fullWidth
-                >
-                  Add
-                </Button>
-              </Grid>
-            </Grid>
-          </Box>
-
-          <Divider sx={{ my: 3 }} />
-
-          <Typography variant="h6" gutterBottom>
-            Service History
-          </Typography>
-          {bookingServices.length > 0 ? (
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Service</TableCell>
-                    <TableCell align="right">Price</TableCell>
-                    <TableCell align="right">Quantity</TableCell>
-                    <TableCell align="right">Total</TableCell>
-                    <TableCell>Notes</TableCell>
-                    <TableCell align="right">Time</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {bookingServices.map((service) => (
-                    <TableRow key={service.id}>
-                      <TableCell>{service.ten_dich_vu}</TableCell>
-                      <TableCell align="right">
-                        {new Intl.NumberFormat("vi-VN").format(
-                          service.gia_tien
-                        )}{" "}
-                        VND
-                      </TableCell>
-                      <TableCell align="right">{service.so_luong}</TableCell>
-                      <TableCell align="right">
-                        {new Intl.NumberFormat("vi-VN").format(
-                          service.gia_tien * service.so_luong
-                        )}{" "}
-                        VND
-                      </TableCell>
-                      <TableCell>{service.ghi_chu}</TableCell>
-                      <TableCell align="right">
-                        {new Date(service.thoi_gian_su_dung).toLocaleString()}
-                      </TableCell>
-                      <TableCell align="center">
-                        <Tooltip title="Delete Service">
-                          <IconButton
-                            color="error"
-                            size="small"
-                            onClick={() => handleDeleteService(service.id)}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <Box
-              sx={{
-                p: 3,
-                textAlign: "center",
-                bgcolor: "background.default",
-                borderRadius: 2,
-              }}
-            >
-              <Typography color="text.secondary">
-                No services have been added yet
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={handleServiceDialogClose} variant="outlined">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onAddService={handleAddService}
+        onDeleteService={handleDeleteService}
+        newServiceData={newServiceData}
+        setNewServiceData={setNewServiceData}
+        bookingServices={bookingServices}
+        services={services}
+        selectedRoom={selectedRoom}
+      />
 
       {/* Snackbar for notifications */}
       <Snackbar
