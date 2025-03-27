@@ -30,7 +30,7 @@ import {
   RoomService,
   Receipt,
   Notifications,
-  Menu as MenuIcon,
+  Menu as MenuIcon, // eslint-disable-next-line
   ChevronLeft,
   Settings,
   Logout,
@@ -47,7 +47,7 @@ const Sidebar = () => {
   const [open, setOpen] = useState(!isMobile);
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
-  const { user, logout, hasRole } = useAuth(); //eslint-disable-next-line
+  const { user, logout, hasRole } = useAuth(); // eslint-disable-next-line
   const navigate = useNavigate();
 
   const handleDrawerToggle = () => {
@@ -138,11 +138,11 @@ const Sidebar = () => {
             HOTEL MANAGER
           </Typography>
         </Box>
-        {open && (
+        {/* {open && (
           <IconButton onClick={handleDrawerToggle}>
             <ChevronLeft />
           </IconButton>
-        )}
+        )} */}
       </Toolbar>
       <Divider />
       <Box sx={{ overflow: "auto", height: "100%" }}>
@@ -215,6 +215,10 @@ const Sidebar = () => {
           color: "text.primary",
           boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
           zIndex: (theme) => theme.zIndex.drawer + 1,
+          transition: theme.transitions.create(["width", "margin"], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         }}
       >
         <Toolbar>
@@ -223,7 +227,7 @@ const Sidebar = () => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: open ? "none" : "block" } }}
+            sx={{ mr: 2 }}
           >
             <MenuIcon />
           </IconButton>
@@ -297,16 +301,21 @@ const Sidebar = () => {
         </MenuItem>
       </Menu>
       <Drawer
-        variant={isMobile ? "temporary" : "permanent"}
+        variant={isMobile ? "temporary" : "persistent"}
         open={open}
         onClose={handleDrawerToggle}
         sx={{
-          width: drawerWidth,
+          width: open ? drawerWidth : 0,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
             borderRight: "1px solid rgba(0, 0, 0, 0.05)",
+            transition: theme.transitions.create("width", {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            overflowX: "hidden",
           },
         }}
       >

@@ -130,6 +130,10 @@ const DashboardLayout = ({ children }) => (
         p: 3,
         pt: { xs: 8, sm: 9 },
         overflow: "auto",
+        transition: theme.transitions.create("margin", {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
       }}
     >
       {children}
