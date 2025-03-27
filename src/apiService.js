@@ -91,8 +91,10 @@ export const createBooking = (bookingData) => {
   console.log("Creating booking with data:", bookingData);
   return api.post("/dat-phong", bookingData);
 };
-export const updateBooking = (id, bookingData) =>
-  api.put(`/dat-phong/${id}`, bookingData);
+export const updateBooking = (id, bookingData) => {
+  console.log(`Updating booking ${id} with data:`, bookingData);
+  return api.put(`/dat-phong/${id}`, bookingData);
+};
 export const deleteBooking = (id) => api.delete(`/dat-phong/${id}`);
 export const checkoutBooking = (id) => {
   console.log(`Checking out booking ${id}`);

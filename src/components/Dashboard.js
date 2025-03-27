@@ -28,6 +28,8 @@ import {
   getBookingServices,
   addBookingService,
   deleteBookingService,
+  updateBooking,
+  getRoomTypes,
 } from "../apiService";
 
 // Import các component con
@@ -38,10 +40,12 @@ import CheckInDialog from "./dashboard/CheckInDialog";
 import CheckOutDialog from "./dashboard/CheckOutDialog";
 import ServiceDialog from "./dashboard/ServiceDialog";
 import RoomActionMenu from "./dashboard/RoomActionMenu";
+import RoomTransferDialog from "./dashboard/RoomTransferDialog";
 
 const Dashboard = () => {
   const theme = useTheme();
   const [rooms, setRooms] = useState([]);
+  const [roomTypes, setRoomTypes] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [services, setServices] = useState([]);
@@ -51,6 +55,7 @@ const Dashboard = () => {
   const [checkInDialogOpen, setCheckInDialogOpen] = useState(false);
   const [checkOutDialogOpen, setCheckOutDialogOpen] = useState(false);
   const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkInData, setCheckInData] = useState({
     khach_hang_id: "",
@@ -81,6 +86,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchRooms();
+    fetchRoomTypes();
     fetchCustomers();
     fetchBookings();
     fetchServices();
@@ -101,6 +107,16 @@ const Dashboard = () => {
           (error.response?.data?.message || error.message),
         severity: "error",
       });
+    }
+  };
+
+  const fetchRoomTypes = async () => {
+    try {
+      const response = await getRoomTypes();
+      console.log("Room types fetched:", response.data);
+      setRoomTypes(response.data);
+    } catch (error) {
+      console.error("Error fetching room types:", error);
     }
   };
 
@@ -154,6 +170,16 @@ const Dashboard = () => {
     );
 
     return activeBooking ? activeBooking.id : null;
+  };
+
+  // Lấy thông tin booking hiện tại của phòng
+  const getCurrentBooking = (roomId) => {
+    if (!bookings || bookings.length === 0) return null;
+
+    return bookings.find(
+      (booking) =>
+        booking.phong_id === roomId && booking.trang_thai === "đã nhận"
+    );
   };
 
   const handleMenuOpen = (event, room) => {
@@ -618,6 +644,114 @@ const Dashboard = () => {
     }
   };
 
+  // Xử lý mở dialog chuyển phòng
+  const handleTransferRoomOpen = () => {
+    if (!selectedRoom) {
+      console.error("No room selected for transfer");
+      return;
+    }
+
+    setTransferDialogOpen(true);
+    handleMenuClose();
+  };
+
+  // Xử lý đóng dialog chuyển phòng
+  const handleTransferRoomClose = () => {
+    setTransferDialogOpen(false);
+  };
+
+  // Xử lý chuyển phòng
+  const handleTransferRoomSubmit = async (transferData) => {
+    setLoading(true);
+
+    try {
+      const { targetRoomId, sourceRoomId, bookingId, notes } = transferData;
+
+      if (!bookingId) {
+        setSnackbar({
+          open: true,
+          message: "Không tìm thấy thông tin đặt phòng",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Lấy thông tin booking hiện tại
+      const bookingInfo = await getBookingById(bookingId);
+      const currentBooking = bookingInfo.data;
+
+      if (!currentBooking) {
+        setSnackbar({
+          open: true,
+          message: "Không tìm thấy thông tin đặt phòng",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // 1. Cập nhật booking sang phòng mới
+      const updatedBookingData = {
+        khach_hang_id: currentBooking.khach_hang_id,
+        phong_id: targetRoomId,
+        thoi_gian_vao: currentBooking.thoi_gian_vao,
+        ghi_chu: notes || currentBooking.ghi_chu + " (Chuyển phòng)",
+        trang_thai: "đã nhận",
+      };
+
+      console.log("Updating booking to new room:", updatedBookingData);
+      await updateBooking(bookingId, updatedBookingData);
+
+      // 2. Cập nhật trạng thái phòng cũ thành "đang dọn"
+      const sourceRoom = rooms.find((room) => room.id === sourceRoomId);
+      if (sourceRoom) {
+        const sourceRoomData = {
+          so_phong: sourceRoom.so_phong,
+          so_tang: sourceRoom.so_tang,
+          loai_phong_id: sourceRoom.loai_phong_id,
+          trang_thai: "đang dọn",
+        };
+        await updateRoom(sourceRoomId, sourceRoomData);
+      }
+
+      // 3. Cập nhật trạng thái phòng mới thành "đang sử dụng"
+      const targetRoom = rooms.find((room) => room.id === targetRoomId);
+      if (targetRoom) {
+        const targetRoomData = {
+          so_phong: targetRoom.so_phong,
+          so_tang: targetRoom.so_tang,
+          loai_phong_id: targetRoom.loai_phong_id,
+          trang_thai: "đang sử dụng",
+        };
+        await updateRoom(targetRoomId, targetRoomData);
+      }
+
+      // Làm mới dữ liệu
+      await fetchRooms();
+      await fetchBookings();
+
+      setSnackbar({
+        open: true,
+        message: "Chuyển phòng thành công",
+        severity: "success",
+      });
+
+      handleTransferRoomClose();
+    } catch (error) {
+      console.error("Error transferring room:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi chuyển phòng: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getRoomStatusIcon = (status) => {
     switch (status) {
       case "trống":
@@ -668,6 +802,11 @@ const Dashboard = () => {
     cleaning: rooms.filter((room) => room.trang_thai === "đang dọn").length,
   };
 
+  // Lọc phòng trống cho dialog chuyển phòng
+  const availableRooms = rooms.filter(
+    (room) => room.trang_thai === "trống" && room.id !== selectedRoom?.id
+  );
+
   return (
     <Box>
       {loading && (
@@ -716,6 +855,7 @@ const Dashboard = () => {
         onCheckOut={handleCheckOutOpen}
         onAddService={handleServiceDialogOpen}
         onMarkAsCleaned={handleMarkAsCleaned}
+        onTransferRoom={handleTransferRoomOpen}
       />
 
       {/* Check-In Dialog */}
@@ -749,6 +889,17 @@ const Dashboard = () => {
         bookingServices={bookingServices}
         services={services}
         selectedRoom={selectedRoom}
+      />
+
+      {/* Room Transfer Dialog */}
+      <RoomTransferDialog
+        open={transferDialogOpen}
+        onClose={handleTransferRoomClose}
+        onSubmit={handleTransferRoomSubmit}
+        selectedRoom={selectedRoom}
+        availableRooms={availableRooms}
+        roomTypes={roomTypes}
+        currentBooking={getCurrentBooking(selectedRoom?.id)}
       />
 
       {/* Snackbar for notifications */}

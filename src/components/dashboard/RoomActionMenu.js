@@ -1,7 +1,13 @@
 "use client";
 
 import { Menu, MenuItem } from "@mui/material";
-import { Person, CheckCircle, RoomService, Refresh } from "@mui/icons-material";
+import {
+  Person,
+  CheckCircle,
+  RoomService,
+  Refresh,
+  SwapHoriz,
+} from "@mui/icons-material";
 
 const RoomActionMenu = ({
   anchorEl,
@@ -11,6 +17,7 @@ const RoomActionMenu = ({
   onCheckOut,
   onAddService,
   onMarkAsCleaned,
+  onTransferRoom,
 }) => {
   return (
     <Menu
@@ -34,6 +41,9 @@ const RoomActionMenu = ({
           </MenuItem>
           <MenuItem onClick={onAddService} sx={{ py: 1.5 }}>
             <RoomService sx={{ mr: 2, fontSize: 20 }} /> Add Services
+          </MenuItem>
+          <MenuItem onClick={onTransferRoom} sx={{ py: 1.5 }}>
+            <SwapHoriz sx={{ mr: 2, fontSize: 20 }} /> Chuyển phòng
           </MenuItem>
         </>
       )}
