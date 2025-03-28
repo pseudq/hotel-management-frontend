@@ -4,7 +4,7 @@ const RoomStatusOverview = ({ roomStats }) => {
   return (
     <Paper sx={{ p: 3, mb: 4 }}>
       <Typography variant="h6" gutterBottom>
-        Room Status Overview
+        Tình trạng phòng
       </Typography>
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid item xs={6} sm={3}>
@@ -20,7 +20,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.total}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Tổng phòng
+              Phòng tổng
             </Typography>
           </Box>
         </Grid>
@@ -37,7 +37,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.available}
             </Typography>
             <Typography variant="body1" color="success.dark">
-              Phòng trống
+              Trống
             </Typography>
           </Box>
         </Grid>
@@ -54,7 +54,7 @@ const RoomStatusOverview = ({ roomStats }) => {
               {roomStats.occupied}
             </Typography>
             <Typography variant="body1" color="error.dark">
-              Phòng đang ở
+              Đang ở
             </Typography>
           </Box>
         </Grid>

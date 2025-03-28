@@ -1,14 +1,14 @@
 import axios from "axios";
 
 // const API_URL = "http://54.254.23.63:5000/api";
-const API_URL = "http://18.143.73.54:5000/api";
-const API_KEY = "your_api_key";
+const API_URL = "http://3.0.95.227:5000/api";
+// const API_KEY = "your_api_key";
 
 // Tạo instance axios với interceptors để xử lý lỗi và logging
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    "X-API-KEY": API_KEY,
+    // "X-API-KEY": API_KEY,
     "Content-Type": "application/json",
   },
   // Thêm timeout để tránh request treo quá lâu

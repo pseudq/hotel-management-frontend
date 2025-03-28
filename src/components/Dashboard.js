@@ -34,7 +34,7 @@ import {
   createCustomer,
 } from "../apiService";
 
-// Import các component con
+// Import components
 import RoomStatusOverview from "./dashboard/RoomStatusOverview";
 import RoomList from "./dashboard/RoomList";
 import CheckInDialog from "./dashboard/CheckInDialog";
@@ -42,7 +42,8 @@ import CheckOutDialog from "./dashboard/CheckOutDialog";
 import ServiceDialog from "./dashboard/ServiceDialog";
 import RoomActionMenu from "./dashboard/RoomActionMenu";
 import RoomTransferDialog from "./dashboard/RoomTransferDialog";
-import BookingTable from "./dashboard/BookingTable";
+import ActiveBookingsTable from "./dashboard/ActiveBookingsTable";
+import PastBookingsTable from "./dashboard/PastBookingsTable";
 import BookingDetailsDialog from "./dashboard/BookingDetailsDialog";
 
 const Dashboard = () => {
@@ -84,6 +85,7 @@ const Dashboard = () => {
     severity: "success",
   });
   const [selectedFloor, setSelectedFloor] = useState("all");
+  const [showCurrentCharges, setShowCurrentCharges] = useState(false);
 
   // State cho tìm kiếm và tạo khách hàng mới
   const [searchStatus, setSearchStatus] = useState(null); // null, "searching", "found", "not_found"
@@ -897,9 +899,14 @@ const Dashboard = () => {
   };
 
   // Xử lý xem chi tiết booking
-  const handleViewBookingDetails = (booking, showInvoice = false) => {
+  const handleViewBookingDetails = (
+    booking,
+    showInvoice = false,
+    showCurrentCharges = false
+  ) => {
     setSelectedBooking(booking);
     setShowInvoiceDetails(showInvoice);
+    setShowCurrentCharges(showCurrentCharges);
     setBookingDetailsDialogOpen(true);
   };
 
@@ -989,7 +996,7 @@ const Dashboard = () => {
       )}
 
       <Typography variant="h4" gutterBottom fontWeight="bold" sx={{ mb: 4 }}>
-        Hotel Dashboard
+        Quản lý khách sạn
       </Typography>
 
       {/* Tổng quan trạng thái phòng */}
@@ -1005,8 +1012,14 @@ const Dashboard = () => {
         onFloorChange={handleFloorChange}
       />
 
-      {/* Bảng thông tin đặt phòng và hóa đơn */}
-      <BookingTable
+      {/* Bảng thông tin đặt phòng */}
+      <ActiveBookingsTable
+        bookings={bookings}
+        onViewDetails={handleViewBookingDetails}
+      />
+
+      {/* Bảng thông tin hóa đơn */}
+      <PastBookingsTable
         bookings={bookings}
         invoices={invoices}
         onViewDetails={handleViewBookingDetails}
@@ -1082,6 +1095,7 @@ const Dashboard = () => {
         onClose={handleBookingDetailsClose}
         booking={selectedBooking}
         showInvoice={showInvoiceDetails}
+        showCurrentCharges={showCurrentCharges}
       />
 
       {/* Snackbar for notifications */}

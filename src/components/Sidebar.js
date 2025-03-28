@@ -75,7 +75,7 @@ const Sidebar = () => {
       path: "/",
       roles: ["quản lý", "nhân viên"],
     },
-    { text: "Rooms", icon: <KingBed />, path: "/rooms", roles: ["quản lý"] },
+    { text: "QL Phòng", icon: <KingBed />, path: "/rooms", roles: ["quản lý"] },
     {
       text: "Cài đặt phòng",
       icon: <Category />,

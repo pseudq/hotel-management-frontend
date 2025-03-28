@@ -181,14 +181,14 @@ const RoomManagement = () => {
         }}
       >
         <Typography variant="h4" fontWeight="bold">
-          Room Management
+          Quản lý phòng
         </Typography>
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => setOpenDialog(true)}
         >
-          Add New Room
+          Thêm phòng mới
         </Button>
       </Box>
 

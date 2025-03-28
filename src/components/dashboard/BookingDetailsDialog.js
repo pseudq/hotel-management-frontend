@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,11 +13,48 @@ import {
   Divider,
   Chip,
   Paper,
+  CircularProgress,
 } from "@mui/material";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+import { calculatePrice } from "../../apiService";
 
-const BookingDetailsDialog = ({ open, onClose, booking, showInvoice }) => {
+const BookingDetailsDialog = ({
+  open,
+  onClose,
+  booking,
+  showInvoice,
+  showCurrentCharges,
+}) => {
+  const [currentCharges, setCurrentCharges] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Fetch current charges when dialog opens with showCurrentCharges=true
+    if (
+      open &&
+      showCurrentCharges &&
+      booking &&
+      booking.trang_thai === "đã nhận"
+    ) {
+      fetchCurrentCharges();
+    } // eslint-disable-next-line
+  }, [open, showCurrentCharges, booking]);
+
+  const fetchCurrentCharges = async () => {
+    if (!booking) return;
+
+    setLoading(true);
+    try {
+      const response = await calculatePrice(booking.id);
+      setCurrentCharges(response.data);
+    } catch (error) {
+      console.error("Error fetching current charges:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!booking) return null;
 
   const formatDate = (dateString) => {
@@ -47,6 +85,103 @@ const BookingDetailsDialog = ({ open, onClose, booking, showInvoice }) => {
     }
   };
 
+  // Render current charges calculation
+  const renderCurrentCharges = () => {
+    if (loading) {
+      return (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+          <CircularProgress size={30} />
+        </Box>
+      );
+    }
+
+    if (!currentCharges) return null;
+
+    return (
+      <Box>
+        <Divider sx={{ my: 3 }} />
+        <Typography variant="h6" gutterBottom fontWeight="bold">
+          Tổng tiền hiện tại
+        </Typography>
+
+        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+            Tiền phòng
+          </Typography>
+          <Box sx={{ ml: 2 }}>
+            {currentCharges.tien_phong.chiTiet.map((detail, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 1,
+                }}
+              >
+                <Typography variant="body2">
+                  {detail.loaiTinh}: {detail.soLuong} x{" "}
+                  {new Intl.NumberFormat("vi-VN").format(detail.donGia)} VND
+                </Typography>
+                <Typography variant="body2" fontWeight="medium">
+                  {new Intl.NumberFormat("vi-VN").format(detail.thanhTien)} VND
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+          <Divider sx={{ my: 1.5 }} />
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="subtitle2">Tổng tiền phòng</Typography>
+            <Typography variant="subtitle2" fontWeight="bold">
+              {new Intl.NumberFormat("vi-VN").format(
+                currentCharges.tien_phong.tongTien
+              )}{" "}
+              VND
+            </Typography>
+          </Box>
+        </Paper>
+
+        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+            Tiền dịch vụ
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography variant="subtitle2">Tổng tiền dịch vụ</Typography>
+            <Typography variant="subtitle2" fontWeight="bold">
+              {new Intl.NumberFormat("vi-VN").format(
+                currentCharges.tien_dich_vu.tong_tien
+              )}{" "}
+              VND
+            </Typography>
+          </Box>
+        </Paper>
+
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            bgcolor: "primary.light",
+            color: "white",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="h6">Tổng tiền hiện tại</Typography>
+            <Typography variant="h5" fontWeight="bold">
+              {new Intl.NumberFormat("vi-VN").format(currentCharges.tong_tien)}{" "}
+              VND
+            </Typography>
+          </Box>
+        </Paper>
+      </Box>
+    );
+  };
+
   return (
     <Dialog
       open={open}
@@ -59,7 +194,11 @@ const BookingDetailsDialog = ({ open, onClose, booking, showInvoice }) => {
     >
       <DialogTitle>
         <Typography variant="h5" fontWeight="bold">
-          {showInvoice ? "Chi tiết hóa đơn" : "Chi tiết đặt phòng"}
+          {showInvoice
+            ? "Chi tiết hóa đơn"
+            : showCurrentCharges
+            ? "Tính tiền hiện tại"
+            : "Chi tiết đặt phòng"}
         </Typography>
       </DialogTitle>
       <DialogContent dividers>
@@ -173,6 +312,12 @@ const BookingDetailsDialog = ({ open, onClose, booking, showInvoice }) => {
                   <strong>Ghi chú:</strong> {booking.invoice.ghi_chu}
                 </Typography>
               )}
+            </Grid>
+          )}
+
+          {showCurrentCharges && booking.trang_thai === "đã nhận" && (
+            <Grid item xs={12}>
+              {renderCurrentCharges()}
             </Grid>
           )}
         </Grid>
