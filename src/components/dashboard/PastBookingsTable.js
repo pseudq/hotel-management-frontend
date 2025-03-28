@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Paper,
   Table,
@@ -43,39 +43,25 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [timeFilter, setTimeFilter] = useState("all");
-  const [filteredBookings, setFilteredBookings] = useState([]);
-  const [totalRevenue, setTotalRevenue] = useState(0);
 
-  // Filter only past bookings (status = "đã trả")
-  const pastBookings = bookings
-    .filter((booking) => booking.trang_thai === "đã trả")
-    .map((booking) => {
-      // Find corresponding invoice
-      const invoice = invoices.find((inv) => inv.dat_phong_id === booking.id);
-      return {
-        ...booking,
-        invoice: invoice || null,
-      };
-    });
-
-  // Cập nhật danh sách và tổng doanh thu khi thay đổi bộ lọc
-  useEffect(() => {
-    filterBookingsByTime(); // eslint-disable-next-line
-  }, [timeFilter, pastBookings]);
-
-  const handleTimeFilterChange = (event, newFilter) => {
-    if (newFilter !== null) {
-      setTimeFilter(newFilter);
-      setPage(0); // Reset về trang đầu tiên khi thay đổi bộ lọc
-    }
-  };
+  // Kết hợp dữ liệu bookings và invoices
+  const pastBookings = useMemo(() => {
+    return bookings
+      .filter((booking) => booking.trang_thai === "đã trả")
+      .map((booking) => {
+        // Find corresponding invoice
+        const invoice = invoices.find((inv) => inv.dat_phong_id === booking.id);
+        return {
+          ...booking,
+          invoice: invoice || null,
+        };
+      });
+  }, [bookings, invoices]);
 
   // Lọc booking theo thời gian và tính tổng doanh thu
-  const filterBookingsByTime = () => {
+  const { filteredBookings, totalRevenue } = useMemo(() => {
     if (!pastBookings || pastBookings.length === 0) {
-      setFilteredBookings([]);
-      setTotalRevenue(0);
-      return;
+      return { filteredBookings: [], totalRevenue: 0 };
     }
 
     // Lấy thời gian hiện tại
@@ -129,8 +115,14 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
       return sum + amount;
     }, 0);
 
-    setFilteredBookings(filtered);
-    setTotalRevenue(total);
+    return { filteredBookings: filtered, totalRevenue: total };
+  }, [pastBookings, timeFilter]);
+
+  const handleTimeFilterChange = (event, newFilter) => {
+    if (newFilter !== null) {
+      setTimeFilter(newFilter);
+      setPage(0); // Reset về trang đầu tiên khi thay đổi bộ lọc
+    }
   };
 
   const handleChangePage = (event, newPage) => {

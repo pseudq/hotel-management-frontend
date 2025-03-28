@@ -78,7 +78,7 @@ api.interceptors.response.use(
 
 // Auth APIs
 export const login = (credentials) => api.post("/auth/login", credentials);
-export const checkAuth = () => api.get("/auth/me");
+export const checkAuth = () => api.get("/auth/profile");
 export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
