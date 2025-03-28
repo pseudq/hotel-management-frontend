@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// const API_URL = "http://54.254.23.63:5000/api";
-const API_URL = "http://3.0.95.227:5000/api";
+const API_URL = "http://localhost:5000/api";
+// const API_URL = "http://3.0.95.227:5000/api";
 // const API_KEY = "your_api_key";
 
 // Tạo instance axios với interceptors để xử lý lỗi và logging

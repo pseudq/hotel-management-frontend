@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Paper,
   Table,
@@ -21,9 +21,20 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
+  ToggleButtonGroup,
+  ToggleButton,
+  Stack,
 } from "@mui/material";
 import { Visibility, Receipt } from "@mui/icons-material";
-import { format } from "date-fns";
+import {
+  format,
+  startOfToday,
+  endOfToday,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
 import { vi } from "date-fns/locale";
 
 const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
@@ -31,6 +42,9 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [timeFilter, setTimeFilter] = useState("all");
+  const [filteredBookings, setFilteredBookings] = useState([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   // Filter only past bookings (status = "đã trả")
   const pastBookings = bookings
@@ -43,6 +57,81 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
         invoice: invoice || null,
       };
     });
+
+  // Cập nhật danh sách và tổng doanh thu khi thay đổi bộ lọc
+  useEffect(() => {
+    filterBookingsByTime(); // eslint-disable-next-line
+  }, [timeFilter, pastBookings]);
+
+  const handleTimeFilterChange = (event, newFilter) => {
+    if (newFilter !== null) {
+      setTimeFilter(newFilter);
+      setPage(0); // Reset về trang đầu tiên khi thay đổi bộ lọc
+    }
+  };
+
+  // Lọc booking theo thời gian và tính tổng doanh thu
+  const filterBookingsByTime = () => {
+    if (!pastBookings || pastBookings.length === 0) {
+      setFilteredBookings([]);
+      setTotalRevenue(0);
+      return;
+    }
+
+    // Lấy thời gian hiện tại
+    const today = new Date();
+    const startOfWeekDate = startOfWeek(today, { weekStartsOn: 1 }); // Tuần bắt đầu từ thứ 2
+    const endOfWeekDate = endOfWeek(today, { weekStartsOn: 1 });
+    const startOfMonthDate = startOfMonth(today);
+    const endOfMonthDate = endOfMonth(today);
+
+    // Lọc booking theo thời gian
+    const filtered = pastBookings.filter((booking) => {
+      if (!booking.invoice) return false;
+
+      // Lấy thời gian trả phòng từ hóa đơn hoặc booking
+      const checkoutDateStr =
+        booking.invoice.thoi_gian_tra || booking.thoi_gian_ra;
+      if (!checkoutDateStr) return false;
+
+      try {
+        const checkoutDate = new Date(checkoutDateStr);
+
+        switch (timeFilter) {
+          case "today":
+            return (
+              checkoutDate >= startOfToday() && checkoutDate <= endOfToday()
+            );
+          case "week":
+            return (
+              checkoutDate >= startOfWeekDate && checkoutDate <= endOfWeekDate
+            );
+          case "month":
+            return (
+              checkoutDate >= startOfMonthDate && checkoutDate <= endOfMonthDate
+            );
+          case "all":
+          default:
+            return true;
+        }
+      } catch (error) {
+        console.error("Error parsing date:", error);
+        return false;
+      }
+    });
+
+    // Tính tổng doanh thu
+    const total = filtered.reduce((sum, booking) => {
+      const amount =
+        booking.invoice && !isNaN(booking.invoice.tong_tien)
+          ? Number(booking.invoice.tong_tien)
+          : 0;
+      return sum + amount;
+    }, 0);
+
+    setFilteredBookings(filtered);
+    setTotalRevenue(total);
+  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -72,7 +161,7 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
   const renderMobileView = () => {
     return (
       <Box>
-        {pastBookings.length === 0 ? (
+        {filteredBookings.length === 0 ? (
           <Box
             sx={{
               p: 3,
@@ -82,11 +171,13 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
             }}
           >
             <Typography color="text.secondary">
-              Không có lịch sử trả phòng
+              {timeFilter === "all"
+                ? "Không có lịch sử trả phòng"
+                : "Không có lịch sử trả phòng trong khoảng thời gian này"}
             </Typography>
           </Box>
         ) : (
-          pastBookings
+          filteredBookings
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map((booking) => (
               <Card key={booking.id} sx={{ mb: 2, borderRadius: 2 }}>
@@ -134,6 +225,19 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
                     <Grid item xs={7}>
                       <Typography variant="body2">
                         {formatDate(booking.thoi_gian_vao)}
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={5}>
+                      <Typography variant="body2" color="text.secondary">
+                        Ngày trả:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={7}>
+                      <Typography variant="body2">
+                        {formatDate(
+                          booking.invoice?.thoi_gian_tra || booking.thoi_gian_ra
+                        )}
                       </Typography>
                     </Grid>
 
@@ -200,7 +304,7 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
               <TableCell sx={{ fontWeight: "bold" }}>Tên khách hàng</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Số CCCD</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Phòng</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Ngày tạo</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Ngày trả</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Tiền thu</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>
                 Thao tác
@@ -208,16 +312,18 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {pastBookings.length === 0 ? (
+            {filteredBookings.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center">
                   <Typography color="text.secondary">
-                    Không có lịch sử trả phòng
+                    {timeFilter === "all"
+                      ? "Không có lịch sử trả phòng"
+                      : "Không có lịch sử trả phòng trong khoảng thời gian này"}
                   </Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              pastBookings
+              filteredBookings
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => (
                   <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
@@ -229,7 +335,11 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
                     <TableCell>
                       {row.so_phong} (Tầng {row.so_tang})
                     </TableCell>
-                    <TableCell>{formatDate(row.thoi_gian_vao)}</TableCell>
+                    <TableCell>
+                      {formatDate(
+                        row.invoice?.thoi_gian_tra || row.thoi_gian_ra
+                      )}
+                    </TableCell>
                     <TableCell>
                       {row.invoice
                         ? formatCurrency(row.invoice.tong_tien)
@@ -268,19 +378,92 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
     );
   };
 
+  // Hiển thị tiêu đề theo bộ lọc thời gian
+  const getTimeFilterTitle = () => {
+    switch (timeFilter) {
+      case "today":
+        return "Hôm nay";
+      case "week":
+        return "Tuần này";
+      case "month":
+        return "Tháng này";
+      case "all":
+      default:
+        return "Tất cả thời gian";
+    }
+  };
+
   return (
     <Paper sx={{ width: "100%", overflow: "hidden", mt: 4 }}>
       <Typography variant="h5" sx={{ p: 2, pb: 1 }}>
         Lịch sử trả phòng
       </Typography>
 
+      <Box sx={{ px: 2, pb: 2 }}>
+        <Card
+          variant="outlined"
+          sx={{ bgcolor: "primary.light", color: "white" }}
+        >
+          <CardContent>
+            <Grid container alignItems="center" spacing={2}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="h6" gutterBottom>
+                  Tổng doanh thu ({getTimeFilterTitle()})
+                </Typography>
+                <Typography variant="h4" fontWeight="bold">
+                  {formatCurrency(totalRevenue)}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  justifyContent={{ xs: "flex-start", md: "flex-end" }}
+                >
+                  <ToggleButtonGroup
+                    value={timeFilter}
+                    exclusive
+                    onChange={handleTimeFilterChange}
+                    aria-label="time filter"
+                    size="small"
+                    sx={{
+                      bgcolor: "white",
+                      "& .MuiToggleButton-root.Mui-selected": {
+                        bgcolor: "primary.dark",
+                        color: "white",
+                        "&:hover": {
+                          bgcolor: "primary.dark",
+                        },
+                      },
+                    }}
+                  >
+                    <ToggleButton value="today" aria-label="today">
+                      Hôm nay
+                    </ToggleButton>
+                    <ToggleButton value="week" aria-label="this week">
+                      Tuần này
+                    </ToggleButton>
+                    <ToggleButton value="month" aria-label="this month">
+                      Tháng này
+                    </ToggleButton>
+                    <ToggleButton value="all" aria-label="all time">
+                      Tất cả
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Stack>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Box>
+
       {isMobile ? renderMobileView() : renderDesktopView()}
 
-      {pastBookings.length > 0 && (
+      {filteredBookings.length > 0 && (
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={pastBookings.length}
+          count={filteredBookings.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
