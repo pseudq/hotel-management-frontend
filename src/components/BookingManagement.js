@@ -411,7 +411,7 @@ const BookingManagement = () => {
         ) : (
           filteredBookings.map((booking) => (
             <Card key={booking.id} sx={{ mb: 2, borderRadius: 2 }}>
-              <CardContent>
+              <CardContent sx={{ p: 2 }}>
                 <Box
                   sx={{
                     display: "flex",
@@ -530,37 +530,37 @@ const BookingManagement = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredBookings.map((booking, index) => (
-                <TableRow hover key={booking.id}>
+              filteredBookings.map((row, index) => (
+                <TableRow hover key={row.id}>
                   <TableCell align="center">{index + 1}</TableCell>
                   <TableCell>
                     <Typography variant="body1" fontWeight="medium">
-                      {getCustomerName(booking.khach_hang_id)}
+                      {getCustomerName(row.khach_hang_id)}
                     </Typography>
                   </TableCell>
-                  <TableCell>{getRoomNumber(booking.phong_id)}</TableCell>
-                  <TableCell>{formatDate(booking.thoi_gian_vao)}</TableCell>
-                  <TableCell>{getStatusChip(booking.trang_thai)}</TableCell>
-                  <TableCell>{booking.ghi_chu || "-"}</TableCell>
+                  <TableCell>{getRoomNumber(row.phong_id)}</TableCell>
+                  <TableCell>{formatDate(row.thoi_gian_vao)}</TableCell>
+                  <TableCell>{getStatusChip(row.trang_thai)}</TableCell>
+                  <TableCell>{row.ghi_chu || "-"}</TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: "flex", justifyContent: "center" }}>
                       <Tooltip title="Xem chi tiết">
                         <IconButton
                           size="small"
                           color="primary"
-                          onClick={() => handleViewDetails(booking)}
+                          onClick={() => handleViewDetails(row)}
                         >
                           <Visibility fontSize="small" />
                         </IconButton>
                       </Tooltip>
 
-                      {booking.trang_thai === "đã nhận" && (
+                      {row.trang_thai === "đã nhận" && (
                         <>
                           <Tooltip title="Chỉnh sửa">
                             <IconButton
                               size="small"
                               color="info"
-                              onClick={() => handleOpenEditDialog(booking)}
+                              onClick={() => handleOpenEditDialog(row)}
                             >
                               <Edit fontSize="small" />
                             </IconButton>
@@ -569,7 +569,7 @@ const BookingManagement = () => {
                             <IconButton
                               size="small"
                               color="success"
-                              onClick={() => handleOpenCheckoutConfirm(booking)}
+                              onClick={() => handleOpenCheckoutConfirm(row)}
                             >
                               <CheckCircle fontSize="small" />
                             </IconButton>
@@ -577,12 +577,12 @@ const BookingManagement = () => {
                         </>
                       )}
 
-                      {booking.trang_thai !== "đã trả" && (
+                      {row.trang_thai !== "đã trả" && (
                         <Tooltip title="Xóa">
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => handleOpenDeleteConfirm(booking)}
+                            onClick={() => handleOpenDeleteConfirm(row)}
                           >
                             <Delete fontSize="small" />
                           </IconButton>
@@ -1114,10 +1114,14 @@ const BookingManagement = () => {
                       {formatDate(bookingDetails.thoi_gian_ra)}
                     </Typography>
                   )}
-                  <Typography variant="body1">
-                    <strong>Trạng thái:</strong>{" "}
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", mt: 1, mb: 1 }}
+                  >
+                    <Typography variant="body1" component="span" sx={{ mr: 1 }}>
+                      <strong>Trạng thái:</strong>
+                    </Typography>
                     {getStatusChip(bookingDetails.trang_thai)}
-                  </Typography>
+                  </Box>
                   {bookingDetails.ghi_chu && (
                     <Typography variant="body1">
                       <strong>Ghi chú:</strong> {bookingDetails.ghi_chu}

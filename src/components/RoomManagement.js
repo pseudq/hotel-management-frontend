@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getRooms, createRoom, deleteRoom, getRoomTypes } from "../apiService";
+import {
+  getRooms,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+  getRoomTypes,
+} from "../apiService";
 import {
   TextField,
   Button,
@@ -24,14 +30,17 @@ import {
   FormControl,
   InputLabel,
   Select,
+  Menu,
 } from "@mui/material";
 import {
   Add,
+  Edit,
   Delete,
   KingBed,
   CheckCircle,
   Person,
   CleaningServices,
+  MoreVert,
 } from "@mui/icons-material";
 
 const RoomManagement = () => {
@@ -44,6 +53,12 @@ const RoomManagement = () => {
     trang_thai: "trống",
   });
   const [openDialog, setOpenDialog] = useState(false);
+  const [dialogMode, setDialogMode] = useState("add"); // "add" or "edit"
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState(null);
+  const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null);
+  const [selectedRoomForMenu, setSelectedRoomForMenu] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -83,35 +98,88 @@ const RoomManagement = () => {
     setNewRoom({ ...newRoom, [name]: value });
   };
 
-  const handleCreateRoom = async () => {
+  const handleOpenAddDialog = () => {
+    setDialogMode("add");
+    setNewRoom({
+      so_phong: "",
+      so_tang: "",
+      loai_phong_id: "",
+      trang_thai: "trống",
+    });
+    setOpenDialog(true);
+  };
+
+  const handleOpenEditDialog = (room) => {
+    setDialogMode("edit");
+    setSelectedRoom(room);
+    setNewRoom({
+      so_phong: room.so_phong,
+      so_tang: room.so_tang,
+      loai_phong_id: room.loai_phong_id,
+      trang_thai: room.trang_thai,
+    });
+    setOpenDialog(true);
+    handleCloseActionMenu();
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const handleSubmit = async () => {
     try {
-      await createRoom(newRoom);
+      if (dialogMode === "add") {
+        await createRoom(newRoom);
+        setSnackbar({
+          open: true,
+          message: "Room created successfully",
+          severity: "success",
+        });
+      } else {
+        await updateRoom(selectedRoom.id, newRoom);
+        setSnackbar({
+          open: true,
+          message: "Room updated successfully",
+          severity: "success",
+        });
+      }
       fetchRooms();
-      setOpenDialog(false);
+      handleCloseDialog();
       setNewRoom({
         so_phong: "",
         so_tang: "",
         loai_phong_id: "",
         trang_thai: "trống",
       });
-      setSnackbar({
-        open: true,
-        message: "Room created successfully",
-        severity: "success",
-      });
     } catch (error) {
-      console.error("Error creating room:", error);
+      console.error(
+        `Error ${dialogMode === "add" ? "creating" : "updating"} room:`,
+        error
+      );
       setSnackbar({
         open: true,
-        message: "Failed to create room",
+        message: `Failed to ${dialogMode === "add" ? "create" : "update"} room`,
         severity: "error",
       });
     }
   };
 
-  const handleDeleteRoom = async (id) => {
+  const handleOpenDeleteConfirm = (room) => {
+    setRoomToDelete(room);
+    setDeleteConfirmOpen(true);
+    handleCloseActionMenu();
+  };
+
+  const handleCloseDeleteConfirm = () => {
+    setDeleteConfirmOpen(false);
+    setRoomToDelete(null);
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!roomToDelete) return;
+
     try {
-      await deleteRoom(id);
+      await deleteRoom(roomToDelete.id);
       fetchRooms();
       setSnackbar({
         open: true,
@@ -125,7 +193,19 @@ const RoomManagement = () => {
         message: "Failed to delete room",
         severity: "error",
       });
+    } finally {
+      handleCloseDeleteConfirm();
     }
+  };
+
+  const handleOpenActionMenu = (event, room) => {
+    setActionMenuAnchorEl(event.currentTarget);
+    setSelectedRoomForMenu(room);
+  };
+
+  const handleCloseActionMenu = () => {
+    setActionMenuAnchorEl(null);
+    setSelectedRoomForMenu(null);
   };
 
   const handleCloseSnackbar = () => {
@@ -170,6 +250,12 @@ const RoomManagement = () => {
     }
   };
 
+  // Get room type name by ID
+  const getRoomTypeName = (id) => {
+    const roomType = roomTypes.find((type) => type.id === id);
+    return roomType ? roomType.ten_loai_phong : "Unknown";
+  };
+
   return (
     <Box>
       <Box
@@ -186,7 +272,7 @@ const RoomManagement = () => {
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => setOpenDialog(true)}
+          onClick={handleOpenAddDialog}
         >
           Thêm phòng mới
         </Button>
@@ -212,20 +298,19 @@ const RoomManagement = () => {
                       />
                       <Box>
                         <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
-                          Room {room.so_phong}
+                          Phòng {room.so_phong}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Floor {room.so_tang}
+                          Tầng {room.so_tang}
                         </Typography>
                       </Box>
                     </Box>
                     <IconButton
                       size="small"
-                      color="error"
-                      onClick={() => handleDeleteRoom(room.id)}
+                      onClick={(e) => handleOpenActionMenu(e, room)}
                       sx={{ ml: 1 }}
                     >
-                      <Delete />
+                      <MoreVert />
                     </IconButton>
                   </Box>
 
@@ -237,10 +322,10 @@ const RoomManagement = () => {
                       color="text.secondary"
                       gutterBottom
                     >
-                      Room Type
+                      Loại phòng
                     </Typography>
                     <Typography variant="body1" fontWeight="medium">
-                      {room.ten_loai_phong || "Standard"}
+                      {getRoomTypeName(room.loai_phong_id) || "Standard"}
                     </Typography>
                   </Box>
 
@@ -250,7 +335,7 @@ const RoomManagement = () => {
                       color="text.secondary"
                       gutterBottom
                     >
-                      Status
+                      Trạng thái
                     </Typography>
                     <Chip
                       icon={getRoomStatusIcon(room.trang_thai)}
@@ -270,17 +355,32 @@ const RoomManagement = () => {
         })}
       </Grid>
 
-      {/* Add Room Dialog */}
+      {/* Action Menu */}
+      <Menu
+        anchorEl={actionMenuAnchorEl}
+        open={Boolean(actionMenuAnchorEl)}
+        onClose={handleCloseActionMenu}
+      >
+        <MenuItem onClick={() => handleOpenEditDialog(selectedRoomForMenu)}>
+          <Edit fontSize="small" sx={{ mr: 1 }} /> Chỉnh sửa phòng
+        </MenuItem>
+        <MenuItem onClick={() => handleOpenDeleteConfirm(selectedRoomForMenu)}>
+          <Delete fontSize="small" sx={{ mr: 1, color: "error.main" }} />
+          <Typography color="error">Xóa phòng</Typography>
+        </MenuItem>
+      </Menu>
+
+      {/* Add/Edit Room Dialog */}
       <Dialog
         open={openDialog}
-        onClose={() => setOpenDialog(false)}
+        onClose={handleCloseDialog}
         PaperProps={{
           sx: { borderRadius: 3 },
         }}
       >
         <DialogTitle>
           <Typography variant="h5" component="div" fontWeight="bold">
-            Add New Room
+            {dialogMode === "add" ? "Add New Room" : "Edit Room"}
           </Typography>
         </DialogTitle>
         <DialogContent dividers>
@@ -302,7 +402,7 @@ const RoomManagement = () => {
               variant="outlined"
             />
             <FormControl fullWidth>
-              <InputLabel id="room-type-label">Room Type</InputLabel>
+              <InputLabel id="room-type-label">Loại phòng</InputLabel>
               <Select
                 labelId="room-type-label"
                 name="loai_phong_id"
@@ -318,7 +418,7 @@ const RoomManagement = () => {
               </Select>
             </FormControl>
             <FormControl fullWidth>
-              <InputLabel id="status-label">Status</InputLabel>
+              <InputLabel id="status-label">Trạng thái</InputLabel>
               <Select
                 labelId="status-label"
                 name="trang_thai"
@@ -326,19 +426,51 @@ const RoomManagement = () => {
                 onChange={handleInputChange}
                 label="Status"
               >
-                <MenuItem value="trống">Available</MenuItem>
-                <MenuItem value="đang sử dụng">Occupied</MenuItem>
-                <MenuItem value="đang dọn">Cleaning</MenuItem>
+                <MenuItem value="trống">Trống</MenuItem>
+                <MenuItem value="đang sử dụng">Đang sử dụng</MenuItem>
+                <MenuItem value="đang dọn">Đang dọn</MenuItem>
               </Select>
             </FormControl>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setOpenDialog(false)} variant="outlined">
+          <Button onClick={handleCloseDialog} variant="outlined">
             Cancel
           </Button>
-          <Button onClick={handleCreateRoom} variant="contained">
-            Create Room
+          <Button onClick={handleSubmit} variant="contained">
+            {dialogMode === "add" ? "Create Room" : "Save Changes"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={handleCloseDeleteConfirm}
+        maxWidth="xs"
+        PaperProps={{
+          sx: { borderRadius: 2 },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h6" component="div">
+            Xác nhận xóa
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Bạn có chắc chắn muốn xóa phòng {roomToDelete?.so_phong}?
+          </Typography>
+          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+            Lưu ý: hành động không thể hoàn tác
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={handleCloseDeleteConfirm} variant="outlined">
+            Hủy
+          </Button>
+          <Button onClick={handleDeleteRoom} variant="contained" color="error">
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>

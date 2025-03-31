@@ -786,10 +786,14 @@ const InvoiceManagement = () => {
                     <strong>Thời gian trả phòng:</strong>{" "}
                     {formatDate(selectedInvoice.thoi_gian_tra)}
                   </Typography>
-                  <Typography variant="body1">
-                    <strong>Trạng thái thanh toán:</strong>{" "}
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", mt: 1, mb: 1 }}
+                  >
+                    <Typography variant="body1" component="span" sx={{ mr: 1 }}>
+                      <strong>Trạng thái thanh toán:</strong>
+                    </Typography>
                     {getStatusChip(selectedInvoice.trang_thai_thanh_toan)}
-                  </Typography>
+                  </Box>
                   {selectedInvoice.phuong_thuc_thanh_toan && (
                     <Typography variant="body1">
                       <strong>Phương thức thanh toán:</strong>{" "}

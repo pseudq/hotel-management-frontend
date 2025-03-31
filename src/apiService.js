@@ -18,10 +18,8 @@ const api = axios.create({
 // Thêm interceptor để log requests
 api.interceptors.request.use(
   (config) => {
-    console.log(
-      `API Request: ${config.method.toUpperCase()} ${config.url}`,
-      config.data || {}
-    );
+    // Remove this line:
+    // console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`, config.data || {})
 
     // Thêm token vào header nếu có
     const token = localStorage.getItem("token");
@@ -32,7 +30,8 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error("API Request Error:", error);
+    // Remove this line:
+    // console.error("API Request Error:", error)
     return Promise.reject(error);
   }
 );
@@ -40,21 +39,17 @@ api.interceptors.request.use(
 // Thêm interceptor để log responses
 api.interceptors.response.use(
   (response) => {
-    console.log(
-      `API Response: ${response.status} ${response.config.url}`,
-      response.data
-    );
+    // Remove this line:
+    // console.log(`API Response: ${response.status} ${response.config.url}`, response.data)
     return response;
   },
   (error) => {
     if (error.response) {
-      // Server trả về response với status code nằm ngoài range 2xx
-      console.error(
-        `API Error ${
-          error.response.status
-        }: ${error.config.method.toUpperCase()} ${error.config.url}`,
-        error.response.data
-      );
+      // Remove this line:
+      // console.error(
+      //   `API Error ${error.response.status}: ${error.config.method.toUpperCase()} ${error.config.url}`,
+      //   error.response.data,
+      // )
 
       // Nếu token hết hạn (401), đăng xuất người dùng
       if (error.response.status === 401) {
@@ -66,11 +61,11 @@ api.interceptors.response.use(
         }
       }
     } else if (error.request) {
-      // Request đã được gửi nhưng không nhận được response
-      console.error("API No Response:", error.request);
+      // Remove this line:
+      // console.error("API No Response:", error.request)
     } else {
-      // Có lỗi khi thiết lập request
-      console.error("API Request Setup Error:", error.message);
+      // Remove this line:
+      // console.error("API Request Setup Error:", error.message)
     }
     return Promise.reject(error);
   }
@@ -89,7 +84,8 @@ export const getRooms = () => api.get("/phong");
 export const getRoomById = (id) => api.get(`/phong/${id}`);
 export const createRoom = (roomData) => api.post("/phong", roomData);
 export const updateRoom = (id, roomData) => {
-  console.log(`Updating room ${id} with data:`, roomData);
+  // Remove this line:
+  // console.log(`Updating room ${id} with data:`, roomData)
   return api.put(`/phong/${id}`, roomData);
 };
 export const deleteRoom = (id) => api.delete(`/phong/${id}`);
@@ -114,16 +110,19 @@ export const deleteCustomer = (id) => api.delete(`/khach-hang/${id}`);
 export const getBookings = () => api.get("/dat-phong");
 export const getBookingById = (id) => api.get(`/dat-phong/${id}`);
 export const createBooking = (bookingData) => {
-  console.log("Creating booking with data:", bookingData);
+  // Remove this line:
+  // console.log("Creating booking with data:", bookingData)
   return api.post("/dat-phong", bookingData);
 };
 export const updateBooking = (id, bookingData) => {
-  console.log(`Updating booking ${id} with data:`, bookingData);
+  // Remove this line:
+  // console.log(`Updating booking ${id} with data:`, bookingData)
   return api.put(`/dat-phong/${id}`, bookingData);
 };
 export const deleteBooking = (id) => api.delete(`/dat-phong/${id}`);
 export const checkoutBooking = (id) => {
-  console.log(`Checking out booking ${id}`);
+  // Remove this line:
+  // console.log(`Checking out booking ${id}`)
   return api.post(`/dat-phong/${id}/tra-phong`);
 };
 
@@ -139,11 +138,13 @@ export const deleteService = (id) => api.delete(`/dich-vu/${id}`);
 export const getBookingServices = (bookingId) =>
   api.get(`/dich-vu/dat-phong/${bookingId}`);
 export const addBookingService = (bookingId, serviceData) => {
-  console.log(`Adding service to booking ${bookingId}:`, serviceData);
+  // Remove this line:
+  // console.log(`Adding service to booking ${bookingId}:`, serviceData)
   return api.post(`/dich-vu/dat-phong/${bookingId}`, serviceData);
 };
 export const deleteBookingService = (serviceUsageId) => {
-  console.log(`Deleting service usage ${serviceUsageId}`);
+  // Remove this line:
+  // console.log(`Deleting service usage ${serviceUsageId}`)
   return api.delete(`/dich-vu/su-dung/${serviceUsageId}`);
 };
 
@@ -154,7 +155,8 @@ export const updateInvoice = (id, invoiceData) =>
 
 // Calculation and other APIs
 export const calculatePrice = (id) => {
-  console.log(`Calculating price for booking ${id}`);
+  // Remove this line:
+  // console.log(`Calculating price for booking ${id}`)
   return api.get(`/dat-phong/${id}/tinh-gia`);
 };
 

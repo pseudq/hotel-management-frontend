@@ -247,9 +247,12 @@ const BookingDetailsDialog = ({
                   {formatDate(booking.thoi_gian_du_kien_ra)}
                 </Typography>
               )}
-              <Typography variant="body1">
-                <strong>Trạng thái:</strong> {getStatusChip(booking.trang_thai)}
-              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", mt: 1, mb: 1 }}>
+                <Typography variant="body1" component="span" sx={{ mr: 1 }}>
+                  <strong>Trạng thái:</strong>
+                </Typography>
+                {getStatusChip(booking.trang_thai)}
+              </Box>
               {booking.ghi_chu && (
                 <Typography variant="body1">
                   <strong>Ghi chú:</strong> {booking.ghi_chu}
@@ -275,10 +278,23 @@ const BookingDetailsDialog = ({
                       <strong>Thời gian trả phòng:</strong>{" "}
                       {formatDate(booking.invoice.thoi_gian_tra)}
                     </Typography>
-                    <Typography variant="body2">
-                      <strong>Trạng thái thanh toán:</strong>{" "}
-                      {booking.invoice.trang_thai_thanh_toan}
-                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        mt: 1,
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="body1"
+                        component="span"
+                        sx={{ mr: 1 }}
+                      >
+                        <strong>Trạng thái thanh toán:</strong>
+                      </Typography>
+                      {getStatusChip(booking.invoice.trang_thai_thanh_toan)}
+                    </Box>
                     {booking.invoice.phuong_thuc_thanh_toan && (
                       <Typography variant="body2">
                         <strong>Phương thức thanh toán:</strong>{" "}
