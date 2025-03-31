@@ -78,12 +78,12 @@ const InvoiceManagement = () => {
   useEffect(() => {
     if (invoices.length > 0 && bookings.length > 0) {
       combineData();
-    } // eslint-disable-next-line
-  }, [invoices, bookings]);
+    }
+  }, [invoices, bookings]); //eslint-disable-line
 
   useEffect(() => {
-    applyFiltersAndSearch(); // eslint-disable-next-line
-  }, [combinedData, searchTerm, filters]);
+    applyFiltersAndSearch();
+  }, [combinedData, searchTerm, filters]); //eslint-disable-line
 
   const fetchData = async () => {
     try {
@@ -710,7 +710,7 @@ const InvoiceManagement = () => {
         }}
       >
         <DialogTitle>
-          <Typography variant="h5" fontWeight="bold">
+          <Typography variant="h5" component="div" fontWeight="bold">
             Chi tiết hóa đơn
           </Typography>
         </DialogTitle>

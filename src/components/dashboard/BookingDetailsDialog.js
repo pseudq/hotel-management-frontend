@@ -193,7 +193,7 @@ const BookingDetailsDialog = ({
       }}
     >
       <DialogTitle>
-        <Typography variant="h5" fontWeight="bold">
+        <Typography variant="h5" component="div" fontWeight="bold">
           {showInvoice
             ? "Chi tiết hóa đơn"
             : showCurrentCharges
