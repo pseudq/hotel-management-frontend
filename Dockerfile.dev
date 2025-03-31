@@ -1,0 +1,21 @@
+# Sử dụng Node.js image cho môi trường dev
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json và package-lock.json
+COPY package*.json ./
+
+# Cài đặt dependencies
+RUN npm install
+
+# Copy mã nguồn
+COPY . .
+
+# Expose port 3000
+EXPOSE 3000
+
+# Chạy ứng dụng trong chế độ development
+CMD ["npm", "start"]
+
