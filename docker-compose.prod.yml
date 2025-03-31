@@ -1,0 +1,8 @@
+services:
+  react-app:
+    image: ngoc2142/fe-prd:latest
+    ports:
+      - "3330:80"
+    environment:
+      - REACT_APP_API_URL=http://18.141.203.53:5000/api
+    restart: always
