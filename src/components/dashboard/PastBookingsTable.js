@@ -72,7 +72,7 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
     const endOfMonthDate = endOfMonth(today);
 
     // Lọc booking theo thời gian
-    const filtered = pastBookings.filter((booking) => {
+    let filtered = pastBookings.filter((booking) => {
       if (!booking.invoice) return false;
 
       // Lấy thời gian trả phòng từ hóa đơn hoặc booking
@@ -104,6 +104,13 @@ const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
         console.error("Error parsing date:", error);
         return false;
       }
+    });
+
+    // Sort by check-out time (newest first)
+    filtered = filtered.sort((a, b) => {
+      const dateA = new Date(a.invoice?.thoi_gian_tra || a.thoi_gian_ra);
+      const dateB = new Date(b.invoice?.thoi_gian_tra || b.thoi_gian_ra);
+      return dateB - dateA; // Newest first
     });
 
     // Tính tổng doanh thu

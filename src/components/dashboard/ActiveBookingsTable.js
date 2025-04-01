@@ -33,9 +33,12 @@ const ActiveBookingsTable = ({ bookings, onViewDetails }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // Filter only active bookings (status = "đã nhận")
-  const activeBookings = bookings.filter(
-    (booking) => booking.trang_thai === "đã nhận"
-  );
+  const activeBookings = bookings
+    .filter((booking) => booking.trang_thai === "đã nhận")
+    .sort((a, b) => {
+      // Sort by check-in time (newest first)
+      return new Date(b.thoi_gian_vao) - new Date(a.thoi_gian_vao);
+    });
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
