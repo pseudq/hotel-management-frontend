@@ -36,14 +36,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import {
-  Add,
-  Edit,
-  Delete,
-  RoomService,
-  AttachMoney,
-  MoreVert,
-} from "@mui/icons-material";
+import { Add, Edit, Delete, RoomService, MoreVert } from "@mui/icons-material";
 
 const ServiceManagement = () => {
   const theme = useTheme();
@@ -224,6 +217,7 @@ const ServiceManagement = () => {
   };
 
   // Calculate total revenue if all services were used once
+  // eslint-disable-next-line
   const totalPotentialRevenue = services.reduce(
     (sum, service) => sum + Number.parseFloat(service.gia || 0),
     0
@@ -433,44 +427,6 @@ const ServiceManagement = () => {
                 </Box>
                 <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold">
                   {services.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <AttachMoney sx={{ color: "success.main", mr: 1 }} />
-                  <Typography variant={isMobile ? "subtitle1" : "h6"}>
-                    Giá cao nhất
-                  </Typography>
-                </Box>
-                <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold">
-                  {services.length > 0
-                    ? formatCurrency(
-                        Math.max(
-                          ...services.map(
-                            (service) => Number.parseFloat(service.gia) || 0
-                          )
-                        )
-                      )
-                    : formatCurrency(0)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <AttachMoney sx={{ color: "info.main", mr: 1 }} />
-                  <Typography variant={isMobile ? "subtitle1" : "h6"}>
-                    Tổng giá trị
-                  </Typography>
-                </Box>
-                <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold">
-                  {formatCurrency(totalPotentialRevenue)}
                 </Typography>
               </CardContent>
             </Card>

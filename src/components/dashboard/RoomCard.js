@@ -10,7 +10,12 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import { KingBed, MoreVert } from "@mui/icons-material";
+import {
+  BedroomParent,
+  BedroomChild,
+  Weekend,
+  MoreVert,
+} from "@mui/icons-material";
 import { useTheme } from "@mui/material";
 
 const RoomCard = ({
@@ -23,6 +28,29 @@ const RoomCard = ({
   const theme = useTheme();
   const statusColor = getRoomStatusColor(room.trang_thai);
 
+  // Hàm xác định icon dựa trên loại phòng
+  const getRoomTypeIcon = (roomTypeName) => {
+    if (!roomTypeName) return <BedroomParent />;
+
+    const typeLower = roomTypeName.toLowerCase();
+
+    if (typeLower.includes("đơn") || typeLower.includes("don")) {
+      return (
+        <BedroomChild sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
+      );
+    } else if (typeLower.includes("đôi") || typeLower.includes("doi")) {
+      return (
+        <BedroomParent sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
+      );
+    } else {
+      return <Weekend sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />;
+    }
+  };
+
+  // Hàm hiển thị tên tầng
+  const getFloorName = (floor) => {
+    return floor === 0 ? "Tầng trệt" : `Tầng ${floor}`;
+  };
   return (
     <Card sx={{ height: "100%", position: "relative" }}>
       <Box
@@ -43,13 +71,13 @@ const RoomCard = ({
       </Box>
       <CardContent>
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <KingBed sx={{ fontSize: 40, color: "primary.main", mr: 2 }} />
+          {getRoomTypeIcon(room.ten_loai_phong)}
           <Box>
             <Typography variant="h5" gutterBottom sx={{ mb: 0 }}>
               Phòng {room.so_phong}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Tầng {room.so_tang} • {room.ten_loai_phong || "Standard"}
+              {getFloorName(room.so_tang)} • {room.ten_loai_phong || "Standard"}
             </Typography>
           </Box>
         </Box>

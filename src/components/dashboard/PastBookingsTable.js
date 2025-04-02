@@ -39,10 +39,10 @@ import { vi } from "date-fns/locale";
 
 const PastBookingsTable = ({ bookings, invoices, onViewDetails }) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const [timeFilter, setTimeFilter] = useState("all");
+  const [timeFilter, setTimeFilter] = useState("today");
 
   // Kết hợp dữ liệu bookings và invoices
   const pastBookings = useMemo(() => {

@@ -28,6 +28,11 @@ const RoomList = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [uniqueFloors, setUniqueFloors] = useState([]);
 
+  // Hàm hiển thị tên tầng
+  const getFloorName = (floor) => {
+    return floor === 0 ? "Tầng trệt" : `Tầng ${floor}`;
+  };
+
   // Lấy danh sách các tầng duy nhất từ danh sách phòng
   useEffect(() => {
     if (rooms && rooms.length > 0) {
@@ -59,7 +64,7 @@ const RoomList = ({
             <MenuItem value="all">Tất cả các tầng</MenuItem>
             {uniqueFloors.map((floor) => (
               <MenuItem key={floor} value={floor}>
-                Tầng {floor}
+                {getFloorName(floor)}
               </MenuItem>
             ))}
           </Select>
@@ -88,7 +93,7 @@ const RoomList = ({
                 value={floor}
                 aria-label={`floor ${floor}`}
               >
-                Tầng {floor}
+                {getFloorName(floor)}
               </ToggleButton>
             ))}
           </ToggleButtonGroup>

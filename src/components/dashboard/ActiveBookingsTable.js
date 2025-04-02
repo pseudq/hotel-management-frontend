@@ -28,7 +28,7 @@ import { vi } from "date-fns/locale";
 
 const ActiveBookingsTable = ({ bookings, onViewDetails }) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 

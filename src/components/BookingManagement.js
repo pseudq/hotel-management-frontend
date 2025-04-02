@@ -5,7 +5,6 @@ import {
   getBookings,
   createBooking,
   updateBooking,
-  deleteBooking,
   checkoutBooking,
   getRooms,
   getCustomers,
@@ -50,7 +49,6 @@ import {
 import {
   Add,
   Edit,
-  Delete,
   CheckCircle,
   Book,
   Person,
@@ -79,8 +77,6 @@ const BookingManagement = () => {
     ghi_chu: "",
     trang_thai: "đã nhận",
   });
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [bookingToDelete, setBookingToDelete] = useState(null);
   const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
   const [bookingToCheckout, setBookingToCheckout] = useState(null);
   const [checkoutData, setCheckoutData] = useState(null);
@@ -126,10 +122,14 @@ const BookingManagement = () => {
 
   const handleOpenAddDialog = () => {
     setDialogMode("add");
+
+    // Get current time in local timezone (UTC+7)
+    const now = new Date();
+
     setFormData({
       khach_hang_id: "",
       phong_id: "",
-      thoi_gian_vao: new Date().toISOString().slice(0, 16),
+      thoi_gian_vao: now.toISOString().slice(0, 16),
       ghi_chu: "",
       trang_thai: "đã nhận",
     });
@@ -139,12 +139,21 @@ const BookingManagement = () => {
   const handleOpenEditDialog = (booking) => {
     setDialogMode("edit");
     setSelectedBooking(booking);
+
+    // Convert UTC time to UTC+7 for the form
+    let localTime;
+    if (booking.thoi_gian_vao) {
+      const utcDate = new Date(booking.thoi_gian_vao);
+      // Add 7 hours to convert from UTC to UTC+7
+      localTime = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000);
+    } else {
+      localTime = new Date();
+    }
+
     setFormData({
       khach_hang_id: booking.khach_hang_id,
       phong_id: booking.phong_id,
-      thoi_gian_vao: booking.thoi_gian_vao
-        ? new Date(booking.thoi_gian_vao).toISOString().slice(0, 16)
-        : "",
+      thoi_gian_vao: localTime.toISOString().slice(0, 16),
       ghi_chu: booking.ghi_chu || "",
       trang_thai: booking.trang_thai,
     });
@@ -175,15 +184,27 @@ const BookingManagement = () => {
         return;
       }
 
+      // Create a copy of the form data to avoid modifying the original
+      const submissionData = { ...formData };
+
+      // For edit mode, we need to convert the time back to UTC
+      // The form shows time in UTC+7, but we need to store it as UTC in the database
+      if (dialogMode === "edit" && submissionData.thoi_gian_vao) {
+        // Parse the datetime-local input value
+        const localDate = new Date(submissionData.thoi_gian_vao);
+        // Format as ISO string
+        submissionData.thoi_gian_vao = localDate.toISOString();
+      }
+
       if (dialogMode === "add") {
-        await createBooking(formData);
+        await createBooking(submissionData);
         setSnackbar({
           open: true,
           message: "Thêm đặt phòng thành công",
           severity: "success",
         });
       } else {
-        await updateBooking(selectedBooking.id, formData);
+        await updateBooking(selectedBooking.id, submissionData);
         setSnackbar({
           open: true,
           message: "Cập nhật đặt phòng thành công",
@@ -204,42 +225,6 @@ const BookingManagement = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleOpenDeleteConfirm = (booking) => {
-    setBookingToDelete(booking);
-    setDeleteConfirmOpen(true);
-    handleCloseActionMenu();
-  };
-
-  const handleCloseDeleteConfirm = () => {
-    setDeleteConfirmOpen(false);
-    setBookingToDelete(null);
-  };
-
-  const handleDeleteBooking = async () => {
-    if (!bookingToDelete) return;
-
-    setLoading(true);
-    try {
-      await deleteBooking(bookingToDelete.id);
-      fetchData();
-      setSnackbar({
-        open: true,
-        message: "Xóa đặt phòng thành công",
-        severity: "success",
-      });
-    } catch (error) {
-      console.error("Error deleting booking:", error);
-      setSnackbar({
-        open: true,
-        message: "Lỗi khi xóa đặt phòng",
-        severity: "error",
-      });
-    } finally {
-      setLoading(false);
-      handleCloseDeleteConfirm();
     }
   };
 
@@ -576,18 +561,6 @@ const BookingManagement = () => {
                           </Tooltip>
                         </>
                       )}
-
-                      {row.trang_thai !== "đã trả" && (
-                        <Tooltip title="Xóa">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleOpenDeleteConfirm(row)}
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      )}
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -750,15 +723,6 @@ const BookingManagement = () => {
             </MenuItem>
           </>
         )}
-
-        {selectedBookingForMenu?.trang_thai !== "đã trả" && (
-          <MenuItem
-            onClick={() => handleOpenDeleteConfirm(selectedBookingForMenu)}
-          >
-            <Delete fontSize="small" sx={{ mr: 1, color: "error.main" }} />
-            <Typography color="error">Xóa</Typography>
-          </MenuItem>
-        )}
       </Menu>
 
       {/* Add/Edit Dialog */}
@@ -869,42 +833,6 @@ const BookingManagement = () => {
           </Button>
           <Button onClick={handleSubmit} variant="contained">
             {dialogMode === "add" ? "Thêm" : "Lưu thay đổi"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={handleCloseDeleteConfirm}
-        maxWidth="xs"
-        PaperProps={{
-          sx: { borderRadius: 2, margin: isMobile ? 2 : "auto" },
-        }}
-      >
-        <DialogTitle>
-          <Typography variant="h6" component="div">
-            Xác nhận xóa
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Bạn có chắc chắn muốn xóa đặt phòng này?
-          </Typography>
-          <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-            Lưu ý: Hành động này không thể hoàn tác.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={handleCloseDeleteConfirm} variant="outlined">
-            Hủy
-          </Button>
-          <Button
-            onClick={handleDeleteBooking}
-            variant="contained"
-            color="error"
-          >
-            Xóa
           </Button>
         </DialogActions>
       </Dialog>

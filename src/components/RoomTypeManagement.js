@@ -38,14 +38,7 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-import {
-  Add,
-  Edit,
-  Delete,
-  AttachMoney,
-  Category,
-  MoreVert,
-} from "@mui/icons-material";
+import { Add, Edit, Delete, Category, MoreVert } from "@mui/icons-material";
 
 const RoomTypeManagement = () => {
   const theme = useTheme();
@@ -483,29 +476,6 @@ const RoomTypeManagement = () => {
                 </Box>
                 <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold">
                   {roomTypes.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={6} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                  <AttachMoney sx={{ color: "success.main", mr: 1 }} />
-                  <Typography variant={isMobile ? "subtitle1" : "h6"}>
-                    Giá cao nhất
-                  </Typography>
-                </Box>
-                <Typography variant={isMobile ? "h5" : "h4"} fontWeight="bold">
-                  {roomTypes.length > 0
-                    ? formatCurrency(
-                        Math.max(
-                          ...roomTypes.map(
-                            (type) => Number.parseFloat(type.gia_qua_dem) || 0
-                          )
-                        )
-                      )
-                    : formatCurrency(0)}
                 </Typography>
               </CardContent>
             </Card>
