@@ -11,6 +11,8 @@ import {
   Paper,
   Divider,
 } from "@mui/material";
+// Thêm import useAuth để lấy thông tin người dùng đăng nhập
+import { useAuth } from "../../contexts/AuthContext";
 
 const CheckOutDialog = ({
   open,
@@ -19,6 +21,20 @@ const CheckOutDialog = ({
   checkOutData,
   selectedRoom,
 }) => {
+  // Thêm useAuth để lấy thông tin người dùng đăng nhập
+  const { user } = useAuth();
+
+  // Hàm xử lý submit với thông tin nhân viên
+  const handleSubmit = () => {
+    // Tạo object chứa thông tin nhân viên
+    const checkoutData = {
+      nhan_vien_id: user?.id,
+    };
+
+    // Gọi onSubmit với thông tin nhân viên
+    onSubmit(checkoutData);
+  };
+
   return (
     <Dialog
       open={open}
@@ -128,7 +144,11 @@ const CheckOutDialog = ({
         <Button onClick={onClose} variant="outlined">
           Thoát
         </Button>
-        <Button onClick={onSubmit} variant="contained" disabled={!checkOutData}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!checkOutData}
+        >
           Xác nhận trả phòng
         </Button>
       </DialogActions>

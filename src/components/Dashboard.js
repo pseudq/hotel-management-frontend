@@ -99,6 +99,10 @@ const Dashboard = () => {
     dia_chi: "",
   });
 
+  // Giả định user đã được xác thực và có thông tin
+  // eslint-disable-next-line
+  const [user, setUser] = useState({ id: 1, ten_dang_nhap: "admin" }); // Thay đổi giá trị mặc định nếu cần
+
   useEffect(() => {
     fetchRooms();
     fetchRoomTypes();
@@ -348,6 +352,7 @@ const Dashboard = () => {
     }
   };
 
+  // Cập nhật hàm handleCheckInSubmit
   const handleCheckInSubmit = async () => {
     try {
       setLoading(true);
@@ -394,6 +399,7 @@ const Dashboard = () => {
         thoi_gian_vao: checkInData.thoi_gian_vao,
         ghi_chu: checkInData.ghi_chu,
         trang_thai: "đã nhận",
+        nhan_vien_id: user?.id, // Thêm nhan_vien_id từ người dùng đăng nhập
       });
 
       console.log("Booking created successfully:", bookingResponse.data);
@@ -427,6 +433,77 @@ const Dashboard = () => {
         open: true,
         message:
           "Lỗi khi check-in: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cập nhật hàm handleCheckOutSubmit
+  const handleCheckOutSubmit = async (checkoutData = {}) => {
+    if (!selectedRoom) {
+      console.error("No room selected for check-out");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Tìm booking ID cho phòng đang được sử dụng
+      const bookingId = findActiveBookingId(selectedRoom.id);
+
+      if (!bookingId) {
+        setSnackbar({
+          open: true,
+          message: "Không tìm thấy thông tin đặt phòng cho phòng này",
+          severity: "error",
+        });
+        handleCheckOutClose();
+        setLoading(false);
+        return;
+      }
+
+      console.log("Processing checkout for booking ID:", bookingId);
+
+      // Thực hiện trả phòng với thông tin nhân viên
+      const checkoutResponse = await checkoutBooking(bookingId, {
+        ...checkoutData,
+        nhan_vien_id: user?.id, // Đảm bảo nhan_vien_id được truyền
+      });
+
+      // Không cần tạo hóa đơn thủ công vì API trả phòng đã tạo hóa đơn
+      console.log(
+        "Invoice created by checkout API:",
+        checkoutResponse.data.hoaDon
+      );
+
+      try {
+        // Thay vì cập nhật trực tiếp, chúng ta sẽ làm mới danh sách phòng
+        await fetchRooms();
+        console.log("Room list refreshed instead of direct update");
+      } catch (roomError) {
+        console.error("Error refreshing rooms:", roomError);
+      }
+
+      // Làm mới danh sách bookings và invoices
+      await fetchBookings();
+      await fetchInvoices();
+
+      setSnackbar({
+        open: true,
+        message: "Check-out thành công",
+        severity: "success",
+      });
+
+      handleCheckOutClose();
+    } catch (error) {
+      console.error("Error during check-out:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi check-out: " +
           (error.response?.data?.message || error.message),
         severity: "error",
       });
@@ -498,15 +575,37 @@ const Dashboard = () => {
     setCheckOutDialogOpen(false);
   };
 
-  const handleCheckOutSubmit = async () => {
+  // Cập nhật hàm handleAddService
+  const handleAddService = async () => {
     if (!selectedRoom) {
-      console.error("No room selected for check-out");
+      console.error("No room selected for adding services");
       return;
     }
 
     setLoading(true);
 
     try {
+      // Kiểm tra dữ liệu trước khi gửi
+      if (!newServiceData.dich_vu_id) {
+        setSnackbar({
+          open: true,
+          message: "Vui lòng chọn dịch vụ",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!newServiceData.so_luong || newServiceData.so_luong < 1) {
+        setSnackbar({
+          open: true,
+          message: "Số lượng phải lớn hơn 0",
+          severity: "error",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Tìm booking ID cho phòng đang được sử dụng
       const bookingId = findActiveBookingId(selectedRoom.id);
 
@@ -516,48 +615,88 @@ const Dashboard = () => {
           message: "Không tìm thấy thông tin đặt phòng cho phòng này",
           severity: "error",
         });
-        handleCheckOutClose();
         setLoading(false);
         return;
       }
 
-      console.log("Processing checkout for booking ID:", bookingId);
-
-      // Thực hiện trả phòng
-      const checkoutResponse = await checkoutBooking(bookingId);
-      console.log("Checkout response:", checkoutResponse.data);
-
-      // Không cần tạo hóa đơn thủ công vì API trả phòng đã tạo hóa đơn
       console.log(
-        "Invoice created by checkout API:",
-        checkoutResponse.data.hoaDon
+        "Adding service to booking ID:",
+        bookingId,
+        "with data:",
+        newServiceData
       );
 
-      try {
-        // Thay vì cập nhật trực tiếp, chúng ta sẽ làm mới danh sách phòng
-        await fetchRooms();
-        console.log("Room list refreshed instead of direct update");
-      } catch (roomError) {
-        console.error("Error refreshing rooms:", roomError);
+      // Đảm bảo newServiceData có nhan_vien_id
+      if (!newServiceData.nhan_vien_id && user?.id) {
+        newServiceData.nhan_vien_id = user.id;
       }
 
-      // Làm mới danh sách bookings và invoices
-      await fetchBookings();
-      await fetchInvoices();
+      // Thêm dịch vụ cho booking
+      await addBookingService(bookingId, newServiceData);
+
+      // Làm mới danh sách dịch vụ đã sử dụng
+      await fetchBookingServices(bookingId);
+
+      // Reset form
+      setNewServiceData({
+        dich_vu_id: "",
+        so_luong: 1,
+        ghi_chu: "",
+      });
 
       setSnackbar({
         open: true,
-        message: "Check-out thành công",
+        message: "Thêm dịch vụ thành công",
         severity: "success",
       });
-
-      handleCheckOutClose();
     } catch (error) {
-      console.error("Error during check-out:", error);
+      console.error("Error adding service:", error);
       setSnackbar({
         open: true,
         message:
-          "Lỗi khi check-out: " +
+          "Lỗi khi thêm dịch vụ: " +
+          (error.response?.data?.message || error.message),
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cập nhật hàm handleDeleteService
+  const handleDeleteService = async (serviceUsageId, data = {}) => {
+    setLoading(true);
+
+    try {
+      console.log("Deleting service usage:", serviceUsageId);
+
+      // Đảm bảo data có nhan_vien_id
+      if (!data.nhan_vien_id && user?.id) {
+        data.nhan_vien_id = user.id;
+      }
+
+      // Xóa dịch vụ đã sử dụng với thông tin nhân viên
+      await deleteBookingService(serviceUsageId, data);
+
+      // Tìm booking ID cho phòng đang được sử dụng
+      const bookingId = findActiveBookingId(selectedRoom.id);
+
+      // Làm mới danh sách dịch vụ đã sử dụng
+      if (bookingId) {
+        await fetchBookingServices(bookingId);
+      }
+
+      setSnackbar({
+        open: true,
+        message: "Xóa dịch vụ thành công",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting service:", error);
+      setSnackbar({
+        open: true,
+        message:
+          "Lỗi khi xóa dịch vụ: " +
           (error.response?.data?.message || error.message),
         severity: "error",
       });
@@ -672,125 +811,6 @@ const Dashboard = () => {
     setServiceDialogOpen(false);
   };
 
-  const handleAddService = async () => {
-    if (!selectedRoom) {
-      console.error("No room selected for adding services");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Kiểm tra dữ liệu trước khi gửi
-      if (!newServiceData.dich_vu_id) {
-        setSnackbar({
-          open: true,
-          message: "Vui lòng chọn dịch vụ",
-          severity: "error",
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (!newServiceData.so_luong || newServiceData.so_luong < 1) {
-        setSnackbar({
-          open: true,
-          message: "Số lượng phải lớn hơn 0",
-          severity: "error",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Tìm booking ID cho phòng đang được sử dụng
-      const bookingId = findActiveBookingId(selectedRoom.id);
-
-      if (!bookingId) {
-        setSnackbar({
-          open: true,
-          message: "Không tìm thấy thông tin đặt phòng cho phòng này",
-          severity: "error",
-        });
-        setLoading(false);
-        return;
-      }
-
-      console.log(
-        "Adding service to booking ID:",
-        bookingId,
-        "with data:",
-        newServiceData
-      );
-
-      // Thêm dịch vụ cho booking
-      await addBookingService(bookingId, newServiceData);
-
-      // Làm mới danh sách dịch vụ đã sử dụng
-      await fetchBookingServices(bookingId);
-
-      // Reset form
-      setNewServiceData({
-        dich_vu_id: "",
-        so_luong: 1,
-        ghi_chu: "",
-      });
-
-      setSnackbar({
-        open: true,
-        message: "Thêm dịch vụ thành công",
-        severity: "success",
-      });
-    } catch (error) {
-      console.error("Error adding service:", error);
-      setSnackbar({
-        open: true,
-        message:
-          "Lỗi khi thêm dịch vụ: " +
-          (error.response?.data?.message || error.message),
-        severity: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteService = async (serviceUsageId) => {
-    setLoading(true);
-
-    try {
-      console.log("Deleting service usage:", serviceUsageId);
-
-      // Xóa dịch vụ đã sử dụng
-      await deleteBookingService(serviceUsageId);
-
-      // Tìm booking ID cho phòng đang được sử dụng
-      const bookingId = findActiveBookingId(selectedRoom.id);
-
-      // Làm mới danh sách dịch vụ đã sử dụng
-      if (bookingId) {
-        await fetchBookingServices(bookingId);
-      }
-
-      setSnackbar({
-        open: true,
-        message: "Xóa dịch vụ thành công",
-        severity: "success",
-      });
-    } catch (error) {
-      console.error("Error deleting service:", error);
-      setSnackbar({
-        open: true,
-        message:
-          "Lỗi khi xóa dịch vụ: " +
-          (error.response?.data?.message || error.message),
-        severity: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Xử lý mở dialog chuyển phòng
   const handleTransferRoomOpen = () => {
     if (!selectedRoom) {
       console.error("No room selected for transfer");
@@ -801,7 +821,6 @@ const Dashboard = () => {
     handleMenuClose();
   };
 
-  // Xử lý đóng dialog chuyển phòng
   const handleTransferRoomClose = () => {
     setTransferDialogOpen(false);
   };

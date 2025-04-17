@@ -24,6 +24,8 @@ import {
   KeyboardArrowDown,
   KeyboardArrowUp,
 } from "@mui/icons-material";
+// Thêm import useAuth để lấy thông tin người dùng đăng nhập
+import { useAuth } from "../../contexts/AuthContext";
 
 const CheckInDialog = ({
   open,
@@ -44,14 +46,24 @@ const CheckInDialog = ({
 }) => {
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [cccdInput, setCccdInput] = useState("");
+  // Thêm useAuth để lấy thông tin người dùng đăng nhập
+  const { user } = useAuth();
 
   // Reset form khi dialog mở
   useEffect(() => {
     if (open) {
       setCccdInput("");
       setShowNewCustomerForm(false);
+
+      // Thêm nhan_vien_id vào checkInData khi dialog mở
+      if (user && user.id) {
+        setCheckInData((prev) => ({
+          ...prev,
+          nhan_vien_id: user.id,
+        }));
+      }
     }
-  }, [open]);
+  }, [open, user, setCheckInData]);
 
   // Hiển thị form tạo khách hàng mới khi không tìm thấy khách hàng
   useEffect(() => {

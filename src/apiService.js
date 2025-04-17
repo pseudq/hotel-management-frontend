@@ -113,20 +113,17 @@ export const deleteCustomer = (id) => api.delete(`/khach-hang/${id}`);
 export const getBookings = () => api.get("/dat-phong");
 export const getBookingById = (id) => api.get(`/dat-phong/${id}`);
 export const createBooking = (bookingData) => {
-  // Remove this line:
-  // console.log("Creating booking with data:", bookingData)
+  // Đảm bảo bookingData có nhan_vien_id từ người dùng đăng nhập
   return api.post("/dat-phong", bookingData);
 };
 export const updateBooking = (id, bookingData) => {
-  // Remove this line:
-  // console.log(`Updating booking ${id} with data:`, bookingData)
+  // Đảm bảo bookingData có nhan_vien_id từ người dùng đăng nhập
   return api.put(`/dat-phong/${id}`, bookingData);
 };
 export const deleteBooking = (id) => api.delete(`/dat-phong/${id}`);
-export const checkoutBooking = (id) => {
-  // Remove this line:
-  // console.log(`Checking out booking ${id}`)
-  return api.post(`/dat-phong/${id}/tra-phong`);
+export const checkoutBooking = (id, checkoutData = {}) => {
+  // Thêm tham số checkoutData để có thể truyền nhan_vien_id
+  return api.post(`/dat-phong/${id}/tra-phong`, checkoutData);
 };
 
 // Service APIs
@@ -141,20 +138,20 @@ export const deleteService = (id) => api.delete(`/dich-vu/${id}`);
 export const getBookingServices = (bookingId) =>
   api.get(`/dich-vu/dat-phong/${bookingId}`);
 export const addBookingService = (bookingId, serviceData) => {
-  // Remove this line:
-  // console.log(`Adding service to booking ${bookingId}:`, serviceData)
+  // Đảm bảo serviceData có nhan_vien_id từ người dùng đăng nhập
   return api.post(`/dich-vu/dat-phong/${bookingId}`, serviceData);
 };
-export const deleteBookingService = (serviceUsageId) => {
-  // Remove this line:
-  // console.log(`Deleting service usage ${serviceUsageId}`)
-  return api.delete(`/dich-vu/su-dung/${serviceUsageId}`);
+export const deleteBookingService = (serviceUsageId, data = {}) => {
+  // Thêm tham số data để có thể truyền nhan_vien_id
+  return api.delete(`/dich-vu/su-dung/${serviceUsageId}`, { data });
 };
 
 // Invoice APIs
 export const getInvoices = () => api.get("/hoa-don");
-export const updateInvoice = (id, invoiceData) =>
-  api.put(`/hoa-don/${id}`, invoiceData);
+export const updateInvoice = (id, invoiceData) => {
+  // Đảm bảo invoiceData có nhan_vien_id từ người dùng đăng nhập
+  return api.put(`/hoa-don/${id}`, invoiceData);
+};
 
 // Calculation and other APIs
 export const calculatePrice = (id) => {

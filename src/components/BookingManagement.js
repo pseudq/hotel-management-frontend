@@ -60,7 +60,12 @@ import {
 import { format, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 
+// Thêm import useAuth
+import { useAuth } from "../contexts/AuthContext";
+
 const BookingManagement = () => {
+  // Thêm useAuth để lấy thông tin người dùng đăng nhập
+  const { user } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [bookings, setBookings] = useState([]);
@@ -185,7 +190,10 @@ const BookingManagement = () => {
       }
 
       // Create a copy of the form data to avoid modifying the original
-      const submissionData = { ...formData };
+      const submissionData = {
+        ...formData,
+        nhan_vien_id: user?.id, // Thêm nhan_vien_id
+      };
 
       // For edit mode, we need to convert the time back to UTC
       // The form shows time in UTC+7, but we need to store it as UTC in the database
@@ -259,7 +267,8 @@ const BookingManagement = () => {
 
     setLoading(true);
     try {
-      await checkoutBooking(bookingToCheckout.id);
+      // Thêm thông tin nhân viên khi trả phòng
+      await checkoutBooking(bookingToCheckout.id, { nhan_vien_id: user?.id });
       fetchData();
       setSnackbar({
         open: true,
@@ -437,6 +446,16 @@ const BookingManagement = () => {
                       {formatDate(booking.thoi_gian_vao)}
                     </Typography>
                   </Grid>
+                  <Grid item xs={5}>
+                    <Typography variant="body2" color="text.secondary">
+                      Nhân viên:
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={7}>
+                    <Typography variant="body2">
+                      {booking.nhan_vien_ho_ten || "Không xác định"}
+                    </Typography>
+                  </Grid>
 
                   {booking.ghi_chu && (
                     <>
@@ -499,6 +518,7 @@ const BookingManagement = () => {
               <TableCell sx={{ fontWeight: "bold" }}>Phòng</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Thời gian vào</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Trạng thái</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Nhân viên</TableCell>
               <TableCell sx={{ fontWeight: "bold" }}>Ghi chú</TableCell>
               <TableCell align="center" sx={{ fontWeight: "bold" }}>
                 Thao tác
@@ -526,6 +546,9 @@ const BookingManagement = () => {
                   <TableCell>{getRoomNumber(row.phong_id)}</TableCell>
                   <TableCell>{formatDate(row.thoi_gian_vao)}</TableCell>
                   <TableCell>{getStatusChip(row.trang_thai)}</TableCell>
+                  <TableCell>
+                    {row.nhan_vien_ho_ten || "Không xác định"}
+                  </TableCell>
                   <TableCell>{row.ghi_chu || "-"}</TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -1053,6 +1076,23 @@ const BookingManagement = () => {
                   {bookingDetails.ghi_chu && (
                     <Typography variant="body1">
                       <strong>Ghi chú:</strong> {bookingDetails.ghi_chu}
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* Thông tin nhân viên */}
+                <Typography variant="h6" gutterBottom>
+                  Thông tin nhân viên
+                </Typography>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body1">
+                    <strong>Nhân viên tạo đặt phòng:</strong>{" "}
+                    {bookingDetails.nhan_vien_ho_ten || "Không xác định"}
+                  </Typography>
+                  {bookingDetails.nhan_vien_tra_phong_ho_ten && (
+                    <Typography variant="body1">
+                      <strong>Nhân viên trả phòng:</strong>{" "}
+                      {bookingDetails.nhan_vien_tra_phong_ho_ten}
                     </Typography>
                   )}
                 </Box>

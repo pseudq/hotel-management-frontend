@@ -26,6 +26,9 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Add, Delete } from "@mui/icons-material";
+// Thêm import useAuth để lấy thông tin người dùng đăng nhập
+import { useAuth } from "../../contexts/AuthContext";
+import { useEffect } from "react";
 
 const ServiceDialog = ({
   open,
@@ -38,6 +41,30 @@ const ServiceDialog = ({
   services,
   selectedRoom,
 }) => {
+  // Thêm useAuth để lấy thông tin người dùng đăng nhập
+  const { user } = useAuth();
+
+  // Thêm useEffect để cập nhật nhan_vien_id khi dialog mở
+  useEffect(() => {
+    if (open && user && user.id) {
+      setNewServiceData((prev) => ({
+        ...prev,
+        nhan_vien_id: user.id,
+      }));
+    }
+  }, [open, user, setNewServiceData]);
+
+  // Hàm xử lý xóa dịch vụ với thông tin nhân viên
+  const handleDeleteService = (serviceUsageId) => {
+    // Tạo object chứa thông tin nhân viên
+    const data = {
+      nhan_vien_id: user?.id,
+    };
+
+    // Gọi onDeleteService với thông tin nhân viên
+    onDeleteService(serviceUsageId, data);
+  };
+
   return (
     <Dialog
       open={open}
@@ -170,7 +197,7 @@ const ServiceDialog = ({
                         <IconButton
                           color="error"
                           size="small"
-                          onClick={() => onDeleteService(service.id)}
+                          onClick={() => handleDeleteService(service.id)}
                         >
                           <Delete />
                         </IconButton>

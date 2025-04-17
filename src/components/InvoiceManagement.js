@@ -48,7 +48,13 @@ import {
 import { format, parseISO, isAfter, isBefore, isEqual } from "date-fns";
 import { vi } from "date-fns/locale";
 
+// Thêm import useAuth
+import { useAuth } from "../contexts/AuthContext";
+
 const InvoiceManagement = () => {
+  // Thêm useAuth để lấy thông tin người dùng đăng nhập
+  const { user } = useAuth();
+
   const [invoices, setInvoices] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [combinedData, setCombinedData] = useState([]);
@@ -188,9 +194,14 @@ const InvoiceManagement = () => {
     });
   };
 
+  // Cập nhật hàm handleUpdateInvoice
   const handleUpdateInvoice = async (id, newStatus) => {
     try {
-      await updateInvoice(id, { trang_thai_thanh_toan: newStatus });
+      // Thêm nhan_vien_id vào dữ liệu cập nhật
+      await updateInvoice(id, {
+        trang_thai_thanh_toan: newStatus,
+        nhan_vien_id: user?.id,
+      });
       fetchData();
       setSnackbar({
         open: true,
@@ -519,6 +530,16 @@ const InvoiceManagement = () => {
                           {formatCurrency(invoice.tong_tien)}
                         </Typography>
                       </Grid>
+                      <Grid item xs={5}>
+                        <Typography variant="body2" color="text.secondary">
+                          Nhân viên:
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={7}>
+                        <Typography variant="body2">
+                          {invoice.nhan_vien_ho_ten || "Không xác định"}
+                        </Typography>
+                      </Grid>
                     </Grid>
 
                     <Box
@@ -590,6 +611,7 @@ const InvoiceManagement = () => {
                     <TableCell sx={{ fontWeight: "bold" }}>
                       Trạng thái
                     </TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Nhân viên</TableCell>
                     <TableCell align="center" sx={{ fontWeight: "bold" }}>
                       Thao tác
                     </TableCell>
@@ -645,6 +667,9 @@ const InvoiceManagement = () => {
                         </TableCell>
                         <TableCell>
                           {getStatusChip(invoice.trang_thai_thanh_toan)}
+                        </TableCell>
+                        <TableCell>
+                          {invoice.nhan_vien_ho_ten || "Không xác định"}
                         </TableCell>
                         <TableCell align="center">
                           <Box
@@ -798,6 +823,23 @@ const InvoiceManagement = () => {
                     <Typography variant="body1">
                       <strong>Phương thức thanh toán:</strong>{" "}
                       {selectedInvoice.phuong_thuc_thanh_toan}
+                    </Typography>
+                  )}
+                  {/* Thông tin nhân viên */}
+                  <Typography variant="body1" sx={{ mt: 2 }}>
+                    <strong>Nhân viên xử lý:</strong>{" "}
+                    {selectedInvoice.nhan_vien_ho_ten || "Không xác định"}
+                  </Typography>
+                  {selectedInvoice.booking?.nhan_vien_ho_ten && (
+                    <Typography variant="body1">
+                      <strong>Nhân viên đặt phòng:</strong>{" "}
+                      {selectedInvoice.booking.nhan_vien_ho_ten}
+                    </Typography>
+                  )}
+                  {selectedInvoice.booking?.nhan_vien_tra_phong_ho_ten && (
+                    <Typography variant="body1">
+                      <strong>Nhân viên trả phòng:</strong>{" "}
+                      {selectedInvoice.booking.nhan_vien_tra_phong_ho_ten}
                     </Typography>
                   )}
                 </Box>
