@@ -31,7 +31,6 @@ import {
   Receipt,
   Notifications,
   Menu as MenuIcon, // eslint-disable-next-line
-  ChevronLeft,
   Settings,
   Logout,
   Person,
@@ -191,18 +190,34 @@ const Sidebar = () => {
         <List sx={{ px: 2 }}>
           <ListItem
             button
+            component={Link}
+            to="/settings"
             sx={{
               mb: 1,
               borderRadius: 2,
+              backgroundColor:
+                location.pathname === "/settings"
+                  ? "primary.light"
+                  : "transparent",
+              color:
+                location.pathname === "/settings" ? "white" : "text.primary",
               "&:hover": {
-                backgroundColor: "action.hover",
+                backgroundColor:
+                  location.pathname === "/settings"
+                    ? "primary.main"
+                    : "action.hover",
               },
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40 }}>
+            <ListItemIcon
+              sx={{
+                color: location.pathname === "/settings" ? "white" : "inherit",
+                minWidth: 40,
+              }}
+            >
               <Settings />
             </ListItemIcon>
-            <ListItemText primary="Settings" />
+            <ListItemText primary="Cài đặt" />
           </ListItem>
         </List>
       </Box>
@@ -291,7 +306,12 @@ const Sidebar = () => {
           </ListItemIcon>
           Profile
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose();
+            navigate("/settings");
+          }}
+        >
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
