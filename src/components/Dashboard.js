@@ -101,7 +101,7 @@ const Dashboard = () => {
 
   // Giả định user đã được xác thực và có thông tin
   // eslint-disable-next-line
-  const [user, setUser] = useState({ id: 1, ten_dang_nhap: "admin" }); // Thay đổi giá trị mặc định nếu cần
+  const [user, setUser] = useState({ id: 1, ten_dang_nhap: "admin" });
 
   useEffect(() => {
     fetchRooms();
@@ -114,12 +114,9 @@ const Dashboard = () => {
 
   const fetchRooms = async () => {
     try {
-      console.log("Fetching rooms...");
       const response = await getRooms();
-      console.log("Rooms fetched:", response.data);
       setRooms(response.data);
     } catch (error) {
-      console.error("Error fetching rooms:", error);
       setSnackbar({
         open: true,
         message:
@@ -133,10 +130,9 @@ const Dashboard = () => {
   const fetchRoomTypes = async () => {
     try {
       const response = await getRoomTypes();
-      console.log("Room types fetched:", response.data);
       setRoomTypes(response.data);
     } catch (error) {
-      console.error("Error fetching room types:", error);
+      // Handle error silently
     }
   };
 
@@ -145,47 +141,42 @@ const Dashboard = () => {
       const response = await getCustomers();
       setCustomers(response.data);
     } catch (error) {
-      console.error("Error fetching customers:", error);
+      // Handle error silently
     }
   };
 
   const fetchBookings = async () => {
     try {
       const response = await getBookings();
-      console.log("Bookings fetched:", response.data);
       setBookings(response.data);
     } catch (error) {
-      console.error("Error fetching bookings:", error);
+      // Handle error silently
     }
   };
 
   const fetchInvoices = async () => {
     try {
       const response = await getInvoices();
-      console.log("Invoices fetched:", response.data);
       setInvoices(response.data);
     } catch (error) {
-      console.error("Error fetching invoices:", error);
+      // Handle error silently
     }
   };
 
   const fetchServices = async () => {
     try {
       const response = await getServices();
-      console.log("Services fetched:", response.data);
       setServices(response.data);
     } catch (error) {
-      console.error("Error fetching services:", error);
+      // Handle error silently
     }
   };
 
   const fetchBookingServices = async (bookingId) => {
     try {
       const response = await getBookingServices(bookingId);
-      console.log("Booking services fetched:", response.data);
       setBookingServices(response.data);
     } catch (error) {
-      console.error("Error fetching booking services:", error);
       setBookingServices([]);
     }
   };
@@ -222,12 +213,7 @@ const Dashboard = () => {
   };
 
   const handleCheckInOpen = () => {
-    if (!selectedRoom) {
-      console.error("No room selected for check-in");
-      return;
-    }
-
-    console.log("Opening check-in dialog for room:", selectedRoom);
+    if (!selectedRoom) return;
 
     // Reset form
     resetCheckInForm();
@@ -286,7 +272,6 @@ const Dashboard = () => {
         });
       }
     } catch (error) {
-      console.error("Error searching for customer:", error);
       setSnackbar({
         open: true,
         message:
@@ -318,7 +303,6 @@ const Dashboard = () => {
 
       // Gọi API tạo khách hàng mới
       const response = await createCustomer(customerData);
-      console.log("Customer created:", response.data);
 
       // Cập nhật danh sách khách hàng
       await fetchCustomers();
@@ -339,7 +323,6 @@ const Dashboard = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error creating customer:", error);
       setSnackbar({
         open: true,
         message:
@@ -390,10 +373,8 @@ const Dashboard = () => {
         });
       }
 
-      console.log("Submitting check-in with data:", checkInData);
-
       // Tạo booking với đúng định dạng API yêu cầu
-      const bookingResponse = await createBooking({
+      await createBooking({
         khach_hang_id: checkInData.khach_hang_id || foundCustomer.id,
         phong_id: checkInData.phong_id,
         thoi_gian_vao: checkInData.thoi_gian_vao,
@@ -402,19 +383,11 @@ const Dashboard = () => {
         nhan_vien_id: user?.id, // Thêm nhan_vien_id từ người dùng đăng nhập
       });
 
-      console.log("Booking created successfully:", bookingResponse.data);
-
-      // Cập nhật trạng thái phòng
-      const roomId = checkInData.phong_id;
-      console.log("Updating room status for room ID:", roomId);
-
       try {
         // Thay vì cập nhật trực tiếp, chúng ta sẽ làm mới danh sách phòng
-        // Vì API cập nhật phòng đang gặp lỗi 500
         await fetchRooms();
-        console.log("Room list refreshed instead of direct update");
       } catch (roomError) {
-        console.error("Error refreshing rooms:", roomError);
+        // Handle error silently
       }
 
       // Làm mới danh sách bookings
@@ -428,7 +401,6 @@ const Dashboard = () => {
 
       handleCheckInClose();
     } catch (error) {
-      console.error("Error during check-in:", error);
       setSnackbar({
         open: true,
         message:
@@ -443,10 +415,7 @@ const Dashboard = () => {
 
   // Cập nhật hàm handleCheckOutSubmit
   const handleCheckOutSubmit = async (checkoutData = {}) => {
-    if (!selectedRoom) {
-      console.error("No room selected for check-out");
-      return;
-    }
+    if (!selectedRoom) return;
 
     setLoading(true);
 
@@ -465,26 +434,17 @@ const Dashboard = () => {
         return;
       }
 
-      console.log("Processing checkout for booking ID:", bookingId);
-
       // Thực hiện trả phòng với thông tin nhân viên
-      const checkoutResponse = await checkoutBooking(bookingId, {
+      await checkoutBooking(bookingId, {
         ...checkoutData,
         nhan_vien_id: user?.id, // Đảm bảo nhan_vien_id được truyền
       });
 
-      // Không cần tạo hóa đơn thủ công vì API trả phòng đã tạo hóa đơn
-      console.log(
-        "Invoice created by checkout API:",
-        checkoutResponse.data.hoaDon
-      );
-
       try {
         // Thay vì cập nhật trực tiếp, chúng ta sẽ làm mới danh sách phòng
         await fetchRooms();
-        console.log("Room list refreshed instead of direct update");
       } catch (roomError) {
-        console.error("Error refreshing rooms:", roomError);
+        // Handle error silently
       }
 
       // Làm mới danh sách bookings và invoices
@@ -499,7 +459,6 @@ const Dashboard = () => {
 
       handleCheckOutClose();
     } catch (error) {
-      console.error("Error during check-out:", error);
       setSnackbar({
         open: true,
         message:
@@ -513,10 +472,7 @@ const Dashboard = () => {
   };
 
   const handleCheckOutOpen = async () => {
-    if (!selectedRoom) {
-      console.error("No room selected for check-out");
-      return;
-    }
+    if (!selectedRoom) return;
 
     setLoading(true);
 
@@ -535,14 +491,11 @@ const Dashboard = () => {
         return;
       }
 
-      console.log("Calculating price for booking ID:", bookingId);
       const response = await calculatePrice(bookingId);
-      console.log("Price calculation response:", response.data);
 
       // Lấy thêm thông tin booking để có khách hàng ID
       try {
         const bookingInfo = await getBookingById(bookingId);
-        console.log("Booking info:", bookingInfo.data);
 
         // Kết hợp dữ liệu từ cả hai API
         setCheckOutData({
@@ -550,14 +503,12 @@ const Dashboard = () => {
           booking: bookingInfo.data,
         });
       } catch (bookingError) {
-        console.error("Error fetching booking details:", bookingError);
         // Vẫn tiếp tục với dữ liệu đã có
         setCheckOutData(response.data);
       }
 
       setCheckOutDialogOpen(true);
     } catch (error) {
-      console.error("Error fetching check-out data:", error);
       setSnackbar({
         open: true,
         message:
@@ -577,10 +528,7 @@ const Dashboard = () => {
 
   // Cập nhật hàm handleAddService
   const handleAddService = async () => {
-    if (!selectedRoom) {
-      console.error("No room selected for adding services");
-      return;
-    }
+    if (!selectedRoom) return;
 
     setLoading(true);
 
@@ -619,13 +567,6 @@ const Dashboard = () => {
         return;
       }
 
-      console.log(
-        "Adding service to booking ID:",
-        bookingId,
-        "with data:",
-        newServiceData
-      );
-
       // Đảm bảo newServiceData có nhan_vien_id
       if (!newServiceData.nhan_vien_id && user?.id) {
         newServiceData.nhan_vien_id = user.id;
@@ -650,7 +591,6 @@ const Dashboard = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error adding service:", error);
       setSnackbar({
         open: true,
         message:
@@ -668,8 +608,6 @@ const Dashboard = () => {
     setLoading(true);
 
     try {
-      console.log("Deleting service usage:", serviceUsageId);
-
       // Đảm bảo data có nhan_vien_id
       if (!data.nhan_vien_id && user?.id) {
         data.nhan_vien_id = user.id;
@@ -692,7 +630,6 @@ const Dashboard = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error deleting service:", error);
       setSnackbar({
         open: true,
         message:
@@ -706,16 +643,11 @@ const Dashboard = () => {
   };
 
   const handleMarkAsCleaned = async () => {
-    if (!selectedRoom) {
-      console.error("No room selected");
-      return;
-    }
+    if (!selectedRoom) return;
 
     setLoading(true);
 
     try {
-      console.log("Marking room as cleaned:", selectedRoom.id);
-
       // Lấy thông tin hiện tại của phòng
       const roomData = {
         so_phong: selectedRoom.so_phong,
@@ -726,7 +658,6 @@ const Dashboard = () => {
 
       // Gọi API để cập nhật trạng thái phòng
       await updateRoom(selectedRoom.id, roomData);
-      console.log("Room status updated successfully to 'trống'");
 
       // Làm mới danh sách phòng
       await fetchRooms();
@@ -737,7 +668,6 @@ const Dashboard = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Error marking room as cleaned:", error);
       setSnackbar({
         open: true,
         message:
@@ -750,7 +680,7 @@ const Dashboard = () => {
       try {
         await fetchRooms();
       } catch (refreshError) {
-        console.error("Error refreshing rooms:", refreshError);
+        // Handle error silently
       }
     } finally {
       handleMenuClose();
@@ -759,10 +689,7 @@ const Dashboard = () => {
   };
 
   const handleServiceDialogOpen = async () => {
-    if (!selectedRoom) {
-      console.error("No room selected for adding services");
-      return;
-    }
+    if (!selectedRoom) return;
 
     setLoading(true);
 
@@ -793,7 +720,6 @@ const Dashboard = () => {
 
       setServiceDialogOpen(true);
     } catch (error) {
-      console.error("Error preparing service dialog:", error);
       setSnackbar({
         open: true,
         message:
@@ -812,10 +738,7 @@ const Dashboard = () => {
   };
 
   const handleTransferRoomOpen = () => {
-    if (!selectedRoom) {
-      console.error("No room selected for transfer");
-      return;
-    }
+    if (!selectedRoom) return;
 
     setTransferDialogOpen(true);
     handleMenuClose();
@@ -865,7 +788,6 @@ const Dashboard = () => {
         trang_thai: "đã nhận",
       };
 
-      console.log("Updating booking to new room:", updatedBookingData);
       await updateBooking(bookingId, updatedBookingData);
 
       // 2. Cập nhật trạng thái phòng cũ thành "đang dọn"
@@ -904,7 +826,6 @@ const Dashboard = () => {
 
       handleTransferRoomClose();
     } catch (error) {
-      console.error("Error transferring room:", error);
       setSnackbar({
         open: true,
         message:

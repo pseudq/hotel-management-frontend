@@ -30,10 +30,11 @@ import {
   RoomService,
   Receipt,
   Notifications,
-  Menu as MenuIcon, // eslint-disable-next-line
+  Menu as MenuIcon,
   Settings,
   Logout,
   Person,
+  BarChart,
 } from "@mui/icons-material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -104,6 +105,12 @@ const Sidebar = () => {
       icon: <Receipt />,
       path: "/invoices",
       roles: ["quản lý", "nhân viên"],
+    },
+    {
+      text: "Thống kê doanh thu",
+      icon: <BarChart />,
+      path: "/revenue",
+      roles: ["quản lý"],
     },
   ];
 

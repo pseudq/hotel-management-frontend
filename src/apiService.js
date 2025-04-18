@@ -160,4 +160,9 @@ export const calculatePrice = (id) => {
   return api.get(`/dat-phong/${id}/tinh-gia`);
 };
 
+// Thống kê APIs
+export const getRevenueStatistics = (params) => {
+  return api.get("/hoa-don/thong-ke", { params });
+};
+
 export default api;

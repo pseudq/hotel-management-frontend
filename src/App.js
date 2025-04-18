@@ -15,6 +15,7 @@ import CustomerManagement from "./components/CustomerManagement";
 import BookingManagement from "./components/BookingManagement";
 import ServiceManagement from "./components/ServiceManagement";
 import InvoiceManagement from "./components/InvoiceManagement";
+import RevenueStatistics from "./components/RevenueStatistics";
 import SettingsPage from "./components/SettingsPage";
 import Login from "./components/Login";
 import PrivateRoute from "./components/PrivateRoute";
@@ -145,6 +146,15 @@ const AppWithTheme = () => {
                 element={
                   <DashboardLayout>
                     <InvoiceManagement />
+                  </DashboardLayout>
+                }
+              />
+
+              <Route
+                path="/revenue"
+                element={
+                  <DashboardLayout>
+                    <RevenueStatistics />
                   </DashboardLayout>
                 }
               />
