@@ -18,5 +18,4 @@ EXPOSE 3000
 
 # Chạy ứng dụng trong chế độ development\
 CMD ["npm", "start"]
-###
-###
+##test conflict 
