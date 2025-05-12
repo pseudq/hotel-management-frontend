@@ -18,7 +18,7 @@ EXPOSE 3000
 
 # Chạy ứng dụng trong chế độ development\
 CMD ["npm", "start"]
-###cicd
-###
-###
-###cicd
+#1
+#2
+#3
+#4
